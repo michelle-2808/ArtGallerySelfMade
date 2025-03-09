@@ -70,7 +70,7 @@ const Navbar = () => {
               </NavLink>
             ) : (
               <button
-                className={`${linkClasses} flex items-center w-full`}
+                className={`${linkClasses} flex items-center w-full text-l font-bold font-playfair  text-black-500`}
                 onClick={(e) => {
                   e.preventDefault();
                   closeMobileMenu();
