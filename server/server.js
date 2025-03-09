@@ -1,16 +1,11 @@
 import express from "express";
 import http from "http";
 import { setupVite, serveStatic } from "./vite.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import connectDB from "./db.js";
 import session from "express-session"; // For session management
 import MongoStore from "connect-mongo"; // Store sessions in MongoDB
 import dotenv from "dotenv";
-import { User } from "./models/index.js"; // Import the User model
-// CORRECT (for modern Node.js)
-import crypto from "crypto";
-import path from 'path'; //Import path module
+import path from 'path'; // Import path module
 import fs from 'fs'; // Added for file system operations
 
 
@@ -57,51 +52,8 @@ if (!process.env.JWT_SECRET) {
   );
 }
 
-// --- Helper Functions ---
-// --- Authentication middleware (protect routes) ---
-function authenticateToken(req, res, next) {
-  // Use session-based authentication
-  if (req.session && req.session.user) {
-    // If user is in the session, they're authenticated
-    req.user = req.session.user; // make user accessible.
-    return next();
-  }
-
-  // Fallback to JWT authentication (if needed for API clients that don't use cookies)
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (!token) {
-    return res.status(401).json({ message: "Unauthorized: No token provided" });
-  }
-
-  jwt.verify(token, jwtSecret, async (err, decoded) => {
-    //verify token
-    if (err) {
-      return res.status(403).json({ message: "Forbidden: Invalid token" });
-    }
-    try {
-      const user = await User.findById(decoded.id);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      req.user = user;
-      next();
-    } catch (error) {
-      console.error("Error finding user:", error);
-      return res
-        .status(500)
-        .json({ message: "Internal server error during authentication" });
-    }
-  });
-}
-
-
-// --- Mock Email Sending Function (Replace with Real Email Sending) ---
-const sendPasswordResetEmail = async (email, token) => {
-    const resetLink = `${process.env.BASE_URL}/reset-password/${token}`;
-    console.log(`Sending password reset email to ${email}.  Reset link: ${resetLink}`);
-};
+// Authentication middleware has been moved to middleware/authMiddleware.js
+// Email sending logic has been moved to routes/authRoutes.js
 
 
 // --- API Routes ---
