@@ -1,4 +1,3 @@
-// models/Order.js
 import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema(
@@ -26,7 +25,7 @@ const orderSchema = new mongoose.Schema(
     }],
     status: { 
       type: String, 
-      required: true, 
+      required: true,
       enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
       default: 'pending'
     },
@@ -62,7 +61,7 @@ orderSchema.pre('save', function(next) {
     const timestamp = new Date().getTime().toString().slice(-6);
     const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
     this.orderNumber = `ORD-${timestamp}-${random}`;
-    
+
     // Add initial status to history
     if (!this.statusHistory || this.statusHistory.length === 0) {
       this.statusHistory = [{ status: this.status, timestamp: new Date() }];
