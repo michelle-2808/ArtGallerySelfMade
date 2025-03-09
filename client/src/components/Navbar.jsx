@@ -1,146 +1,131 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
-import { Menu, LogOut, ShoppingCart, User, UserCog } from "lucide-react";
-import AuthContext from "../hooks/AuthContext"; // Import AuthContext
-import { useContext } from "react";
+import { useState, useContext } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { Menu, LogOut, User, UserCog } from "lucide-react"; // Import only necessary icons
+import AuthContext from "../hooks/AuthContext";
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await logout();
-      // Redirect using navigate (if you have access to it) or window.location
-      window.location.href = "/"; // Or '/auth' if you prefer to go to the login page
+      navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
+  const navigation = [
+    { name: "Home", href: "/", current: true },
+    ...(user
+      ? [
+          user.isAdmin
+            ? {
+                name: "Admin Dashboard",
+                href: "/dashboard",
+                current: false
+                
+              }
+            : {
+                name: "Dashboard",
+                href: "/dashboard",
+                current: false,
+                icon: User,
+              },
+          { name: "Logout", href: "#", onClick: handleLogout },
+        ]
+      : [{ name: "Login", href: "/auth", current: false }]),
+  ];
 
-  const NavLinks = ({ isMobile }) => {
+  const NavLinks = ({ isMobile, nav }) => {
+    const closeMobileMenu = () => {
+      setIsMobileMenuOpen(false);
+    };
+
     const linkClasses = isMobile
-      ? "block py-2 px-4 text-white hover:bg-gray-700 w-full text-left" // Mobile styles
-      : "hover:text-gray-300 transition-colors"; // Desktop styles
+      ? `block py-2 px-4 hover:bg-green-100 w-full text-left text-gray-700` // Mobile styles, green hover
+      : "hover:text-green-700 transition-colors"; // Desktop styles, green hover
 
     return (
       <>
-        <NavLink
-          to="/"
-          className={({ isActive }) =>
-            `${linkClasses} ${isActive ? "border-b-2 border-white" : ""}`
-          }
-          onClick={closeMobileMenu}
-        >
-          Home
-        </NavLink>
-        {user ? (
-          <>
-            {user.isAdmin ? (
+        {nav.map((item) => (
+          <div key={item.name} className="relative group">
+            {item.href && item.name !== "Logout" ? (
               <NavLink
-                to="/admin"
-                className={({ isActive }) =>
-                  `${linkClasses} ${isActive ? "border-b-2 border-white" : ""}`
-                }
+                to={item.href}
                 onClick={closeMobileMenu}
+                className={({ isActive }) =>
+                  `${linkClasses} ${
+                    isActive
+                      ? "border-b-2 border-green-600 font-semibold text-green-700"
+                      : ""
+                  }`
+                }
               >
-                <UserCog className="mr-2 h-4 w-4 inline-block" />{" "}
-                {/* Icon for Admin */}
-                Admin Dashboard
+                {" "}
+                <span className="text-l font-bold font-playfair  text-black-500">
+                  {item.name}
+                </span>
               </NavLink>
             ) : (
-              <NavLink
-                to="/cart"
-                className={({ isActive }) =>
-                  `${linkClasses} ${isActive ? "border-b-2 border-white" : ""}`
-                }
-                onClick={closeMobileMenu}
+              <button
+                className={`${linkClasses} flex items-center w-full`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  closeMobileMenu();
+                  handleLogout();
+                }}
               >
-                <ShoppingCart className="mr-2 h-4 w-4 inline-block" /> Cart
-              </NavLink>
+                <LogOut className="mr-2 h-4 w-4" /> Logout
+              </button>
             )}
-            <NavLink
-              to="/profile"
-              className={({ isActive }) =>
-                `${linkClasses} ${isActive ? "border-b-2 border-white" : ""}`
-              }
-              onClick={closeMobileMenu}
-            >
-              <User className="mr-2 h-4 w-4 inline-block" /> Profile
-            </NavLink>
-            <button
-              className={`${linkClasses} flex items-center`} // Use flex for icon alignment
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </button>
-          </>
-        ) : (
-          <NavLink
-            to="/auth"
-            className={({ isActive }) =>
-              `bg-green-500 px-4 py-2 rounded text-white hover:bg-green-600 ${
-                isActive ? "border-b-2 border-white" : ""
-              }`
-            }
-            onClick={closeMobileMenu}
-          >
-            Login
-          </NavLink>
-        )}
+          </div>
+        ))}
       </>
     );
   };
 
   return (
-    <nav className="h-16 bg-gray-900 text-white px-6 flex justify-between items-center shadow-lg">
-      <NavLink to="/" className="text-2xl font-bold">
-        My App
+    <nav className="bg-white text-gray-800 shadow-md h-16 px-6 flex items-center justify-between">
+      <NavLink to="/" className="flex items-center">
+        <span className="text-2xl font-bold font-playfair  text-black-500  px-2 md:px-20">
+          Amruta's Art Gallery
+        </span>
       </NavLink>
 
       {/* Desktop Navigation */}
       <ul className="hidden md:flex space-x-6">
-        <NavLinks isMobile={false} />
+        <NavLinks isMobile={false} nav={navigation} />
       </ul>
 
       {/* Mobile Navigation (Hamburger Menu) */}
       <div className="md:hidden">
         <button
-          onClick={toggleMobileMenu}
-          className="text-white hover:text-gray-300 focus:outline-none"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="text-gray-700 hover:text-green-600 focus:outline-none"
         >
           <Menu className="h-6 w-6" />
         </button>
 
-        {/* Mobile Menu (Sliding Panel) */}
         {isMobileMenuOpen && (
           <div
-            className="fixed inset-0 bg-gray-900 bg-opacity-50 z-50"
-            onClick={closeMobileMenu}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50"
+            onClick={() => setIsMobileMenuOpen(false)}
           >
             <div
-              className="absolute top-0 left-0 h-full w-64 bg-gray-800 text-white p-4 transform transition-transform duration-300 ease-in-out"
+              className="absolute top-0 right-0 h-full w-64 bg-white text-gray-700 p-4 transform transition-transform duration-300 ease-in-out"
               style={{
                 transform: isMobileMenuOpen
                   ? "translateX(0)"
-                  : "translateX(-100%)",
+                  : "translateX(100%)",
               }}
-              onClick={(e) => e.stopPropagation()} // Prevent clicks inside the menu from closing it
+              onClick={(e) => e.stopPropagation()}
             >
               <button
-                onClick={closeMobileMenu}
-                className="absolute top-4 right-4 text-white hover:text-gray-300 focus:outline-none"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="absolute top-4 right-4 text-gray-700 hover:text-green-600 focus:outline-none"
               >
-                {/* Close Icon (X) - You can use lucide-react for this if you want */}
                 <svg
                   className="h-6 w-6"
                   fill="none"
@@ -155,9 +140,9 @@ const Navbar = () => {
                   />
                 </svg>
               </button>
-              <ul className="mt-16">
-                <NavLinks isMobile={true} />
-              </ul>
+              <div className="mt-16 space-y-2">
+                <NavLinks isMobile={true} nav={navigation} />
+              </div>
             </div>
           </div>
         )}

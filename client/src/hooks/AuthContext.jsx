@@ -4,8 +4,8 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Good practice to have a loading state
-  const [authError, setAuthError] = useState(null); // Add error state
+  const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -14,18 +14,17 @@ export const AuthProvider = ({ children }) => {
         setUser(JSON.parse(storedUser));
       } catch (error) {
         console.error("Error parsing user from localStorage:", error);
-        localStorage.removeItem("user"); // Remove invalid data
+        localStorage.removeItem("user");
       }
     }
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
-    setAuthError(null); // Clear any previous errors
-    setLoading(true); // Set loading state
+    setAuthError(null);
+    setLoading(true);
     try {
       const response = await fetch("/api/login", {
-        // Replace with your actual login endpoint
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,18 +34,18 @@ export const AuthProvider = ({ children }) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed"); // Use more specific error messages if your API provides them
+        throw new Error(errorData.message || "Login failed");
       }
 
       const data = await response.json();
-      setUser(data.user); // Assuming your API returns the user object
-      localStorage.setItem("user", JSON.stringify(data.user)); // Store user data
-      return data; // Return data on success (optional, but useful)
+      setUser(data.user);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      return data; // Return for consistency
     } catch (error) {
-      setAuthError(error.message); // Store error message
-      throw error; // Re-throw the error to be caught by the component
+      setAuthError(error.message);
+      throw error; // Re-throw
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
 
@@ -78,7 +77,7 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
       }
-      return data;
+      return data; // Return for consistency
     } catch (error) {
       setAuthError(error.message);
       throw error;
@@ -87,9 +86,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
+  const logout = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/logout", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Logout failed on the server");
+      }
+      setUser(null);
+      localStorage.removeItem("user");
+      // NO NAVIGATION HERE!
+    } catch (error) {
+      console.error("Logout error:", error);
+      setAuthError(error.message || "Logout failed");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
