@@ -101,7 +101,7 @@ const AuthPage = () => {
     setError(null);
     setSuccessMessage(null);
     try {
-      const response = await fetch("/api/forgot-password", {
+      const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: forgotPasswordEmail }),
@@ -136,7 +136,7 @@ const AuthPage = () => {
     }
 
     try {
-      const response = await fetch(`/api/reset-password/${resetToken}`, {
+      const response = await fetch(`/api/auth/reset-password/${routeToken}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: resetPasswordData.password }),
@@ -159,7 +159,7 @@ const AuthPage = () => {
 
   const requestOtp = async (email, password) => {
     try {
-      const response = await fetch("/api/request-otp", {
+      const response = await fetch("/api/auth/request-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
