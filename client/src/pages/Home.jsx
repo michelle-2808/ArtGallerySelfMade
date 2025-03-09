@@ -24,15 +24,20 @@ const Home = () => {
         params.category = selectedCategory;
       }
 
-      const response = await axios.get('/api/products', { params });
+      const response = await axios.get("/api/products", { params });
+
+      // Extract products from the response structure
+      const productsData = response.data.products || [];
 
       // Filter featured products
-      const featured = response.data.filter(product => product.featured);
+      const featured = productsData.filter((product) => product.featured);
 
       // Get unique categories
-      const uniqueCategories = [...new Set(response.data.map(product => product.category))];
+      const uniqueCategories = [
+        ...new Set(productsData.map((product) => product.category)),
+      ];
 
-      setProducts(response.data);
+      setProducts(productsData);
       setFeaturedProducts(featured);
       setCategories(uniqueCategories);
     } catch (error) {
@@ -81,7 +86,9 @@ const Home = () => {
         {/* Featured Products Section */}
         {featuredProducts.length > 0 && selectedCategory === "all" && (
           <div className="mb-16">
-            <h2 className="text-3xl font-bold mb-8 font-playfair">Featured Artworks</h2>
+            <h2 className="text-3xl font-bold mb-8 font-playfair">
+              Featured Artworks
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {featuredProducts.map((product) => (
                 <ProductCard key={product._id} product={product} />
@@ -93,7 +100,9 @@ const Home = () => {
         {/* All Products Section */}
         <div>
           <h2 className="text-3xl font-bold mb-8 font-playfair">
-            {selectedCategory === "all" ? "All Artworks" : `${selectedCategory} Artworks`}
+            {selectedCategory === "all"
+              ? "All Artworks"
+              : `${selectedCategory} Artworks`}
           </h2>
 
           {loading ? (
@@ -102,7 +111,9 @@ const Home = () => {
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">No artworks found in this category.</p>
+              <p className="text-gray-500">
+                No artworks found in this category.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

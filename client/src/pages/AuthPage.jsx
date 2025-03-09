@@ -183,8 +183,8 @@ const AuthPage = () => {
   }, [routeToken]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl grid md:grid-cols-2 gap-6">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl grid md:grid-cols-2 gap-6">
         <div className="space-y-6">
           <div>
             <h1 className="text-4xl font-playfair font-bold">
@@ -195,7 +195,7 @@ const AuthPage = () => {
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-xl w-96 min-h-[450px] flex flex-col">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-96 min-h-[450px] flex flex-col">
             {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
             {successMessage && (
               <p className="text-green-500 text-sm mb-4">{successMessage}</p>
@@ -284,11 +284,11 @@ const AuthPage = () => {
 
                     <button
                       type="submit"
-                      className="bg-green-500 text-white py-2 rounded-xl hover:bg-green-600 transition-colors duration-200 w-full"
+                      className="bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 w-full font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                       disabled={isLoading.login}
                     >
                       {isLoading.login ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mx-auto"></div>
                       ) : (
                         "Login"
                       )}
@@ -372,11 +372,11 @@ const AuthPage = () => {
 
                     <button
                       type="submit"
-                      className="bg-green-500 text-white py-2 rounded-xl hover:bg-green-600 transition-colors duration-200 w-full"
+                      className="bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 w-full font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                       disabled={isLoading.register}
                     >
                       {isLoading.register ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mx-auto"></div>
                       ) : otpSent ? (
                         "Signup"
                       ) : (
@@ -432,11 +432,11 @@ const AuthPage = () => {
                   </div>
                   <button
                     type="submit"
-                    className="bg-green-500 text-white py-2 rounded-xl hover:bg-green-600 transition-colors duration-200 w-full"
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 w-full font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                     disabled={isLoading.forgotPassword}
                   >
                     {isLoading.forgotPassword ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mx-auto"></div>
                     ) : (
                       "Send Reset Link"
                     )}
@@ -506,11 +506,11 @@ const AuthPage = () => {
 
                   <button
                     type="submit"
-                    className="bg-green-500 text-white py-2 rounded-xl hover:bg-green-600 transition-colors duration-200 w-full"
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 w-full font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                     disabled={isLoading.register}
                   >
                     {isLoading.register ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mx-auto"></div>
                     ) : (
                       "Reset Password"
                     )}

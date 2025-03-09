@@ -1,21 +1,17 @@
 import React, { Suspense, lazy } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./hooks/AuthContext";
-import ProtectedRoute from "./routes/ProtectedRoute"; // Assumed existence
+import ProtectedRoute from "./components/ProtectedRoute"; // Updated import path
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Contact from "./pages/Contact";
+import About from "./pages/About";
 import AuthPage from "./pages/AuthPage";
-import ProductDetail from "./pages/ProductDetail"; // Added
-import Cart from "./pages/Cart"; // Added
-import Checkout from "./pages/Checkout"; // Added
-import OrderConfirmation from "./pages/OrderConfirmation"; // Added
+import ProductDetail from "./pages/ProductDetail";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import OrderConfirmation from "./pages/OrderConfirmation";
 
 // Lazy load admin components
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -33,6 +29,7 @@ const AppLayout = () => {
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/reset-password/:token" element={<AuthPage />} />
+        <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route
           path="/dashboard"
@@ -42,9 +39,9 @@ const AppLayout = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/product/:productId" element={<ProductDetail />} /> {/* Added */}
-        <Route path="/products" element={<Home />} /> {/* Added - Assumed Products page is Home */}
-        <Route path="/cart" element={<Cart />} /> {/* Added */}
+        <Route path="/product/:productId" element={<ProductDetail />} />
+        <Route path="/products" element={<Home />} />
+        <Route path="/cart" element={<Cart />} />
         <Route
           path="/checkout"
           element={
@@ -52,7 +49,7 @@ const AppLayout = () => {
               <Checkout />
             </ProtectedRoute>
           }
-        /> {/* Added */}
+        />
         <Route
           path="/order-confirmation/:orderId"
           element={
@@ -60,13 +57,13 @@ const AppLayout = () => {
               <OrderConfirmation />
             </ProtectedRoute>
           }
-        /> {/* Added */}
+        />
 
         {/* Admin Routes */}
         <Route
           path="/admin/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute adminOnly={true}>
               <Suspense fallback={<div>Loading...</div>}>
                 <AdminDashboard />
               </Suspense>
@@ -76,7 +73,7 @@ const AppLayout = () => {
         <Route
           path="/admin/product/:productId"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute adminOnly={true}>
               <Suspense fallback={<div>Loading...</div>}>
                 <ProductAnalytics />
               </Suspense>
@@ -86,7 +83,7 @@ const AppLayout = () => {
         <Route
           path="/admin/products"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute adminOnly={true}>
               <Suspense fallback={<div>Loading...</div>}>
                 <ProductManagement />
               </Suspense>
@@ -96,7 +93,7 @@ const AppLayout = () => {
         <Route
           path="/admin/products/new"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute adminOnly={true}>
               <Suspense fallback={<div>Loading...</div>}>
                 <ProductForm />
               </Suspense>
@@ -106,7 +103,7 @@ const AppLayout = () => {
         <Route
           path="/admin/products/edit/:productId"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute adminOnly={true}>
               <Suspense fallback={<div>Loading...</div>}>
                 <ProductForm />
               </Suspense>
@@ -116,7 +113,7 @@ const AppLayout = () => {
         <Route
           path="/admin/categories"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute adminOnly={true}>
               <Suspense fallback={<div>Loading...</div>}>
                 <CategoryManagement />
               </Suspense>
@@ -130,9 +127,7 @@ const AppLayout = () => {
 
 const App = () => (
   <AuthProvider>
-    <Router>
-      <AppLayout />
-    </Router>
+    <AppLayout />
   </AuthProvider>
 );
 

@@ -1,12 +1,31 @@
-import { useState, useContext } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { Menu, LogOut, User, UserCog } from "lucide-react"; // Import only necessary icons
+import { useState, useContext, useEffect } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import {
+  Menu,
+  LogOut,
+  User,
+  UserCog,
+  ShoppingCart,
+  Home,
+  Image,
+  Phone,
+} from "lucide-react";
 import AuthContext from "../hooks/AuthContext";
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -16,137 +35,181 @@ const Navbar = () => {
       console.error("Logout failed:", error);
     }
   };
+
   const navigation = [
-    { name: "Home", href: "/", current: true },
+    { name: "Home", href: "/", icon: Home, current: location.pathname === "/" },
+    {
+      name: "Products",
+      href: "/products",
+      icon: Image,
+      current: location.pathname.startsWith("/products"),
+    },
+    {
+      name: "About",
+      href: "/about",
+      icon: User,
+      current: location.pathname === "/about",
+    },
+    {
+      name: "Contact",
+      href: "/contact",
+      icon: Phone,
+      current: location.pathname === "/contact",
+    },
     ...(user
       ? [
           user.isAdmin
             ? {
                 name: "Admin Dashboard",
-                href: "/dashboard",
-                current: false
-                
+                href: "/admin/dashboard",
+                icon: UserCog,
+                current: location.pathname.startsWith("/admin"),
               }
             : {
                 name: "Dashboard",
                 href: "/dashboard",
-                current: false,
                 icon: User,
+                current: location.pathname === "/dashboard",
               },
-          { name: "Logout", href: "#", onClick: handleLogout },
+          {
+            name: "Logout",
+            href: "#",
+            icon: LogOut,
+            onClick: handleLogout,
+            current: false,
+          },
         ]
-      : [{ name: "Login", href: "/auth", current: false }]),
+      : [
+          {
+            name: "Login",
+            href: "/auth",
+            icon: User,
+            current: location.pathname === "/auth",
+          },
+        ]),
   ];
 
-  const NavLinks = ({ isMobile, nav }) => {
+  const NavLinks = ({ isMobile }) => {
     const closeMobileMenu = () => {
       setIsMobileMenuOpen(false);
     };
 
     const linkClasses = isMobile
-      ? `block py-2 px-4 hover:bg-green-100 w-full text-left text-gray-700` // Mobile styles, green hover
-      : "hover:text-green-700 transition-colors"; // Desktop styles, green hover
+      ? `flex items-center py-3 px-4 hover:bg-green-100 w-full text-left text-gray-700 transition-all duration-300 border-l-4 border-transparent hover:border-green-500`
+      : "flex items-center space-x-1 px-4 py-2.5 rounded-full hover:bg-green-500/10 hover:text-green-700 transition-all duration-300 relative group";
+
+    const desktopActiveClass = !isMobile
+      ? "bg-green-500/10 text-green-700 font-medium after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:bg-green-500 after:rounded-full after:animate-pulse"
+      : "";
 
     return (
       <>
-        {nav.map((item) => (
-          <div key={item.name} className="relative group">
-            {item.href && item.name !== "Logout" ? (
+        {navigation.map((item) => (
+          <li key={item.name} className={isMobile ? "w-full" : "relative"}>
+            {item.onClick ? (
+              <button
+                onClick={() => {
+                  item.onClick();
+                  closeMobileMenu();
+                }}
+                className={`${linkClasses} ${
+                  item.current && !isMobile ? desktopActiveClass : ""
+                }`}
+              >
+                {item.icon && <item.icon className="w-5 h-5 mr-2" />}
+                <span>{item.name}</span>
+                {!isMobile && (
+                  <span className="absolute inset-0 rounded-full bg-green-500/0 group-hover:bg-green-500/5 transition-colors duration-300"></span>
+                )}
+              </button>
+            ) : (
               <NavLink
                 to={item.href}
                 onClick={closeMobileMenu}
                 className={({ isActive }) =>
                   `${linkClasses} ${
-                    isActive
-                      ? "border-b-2 border-green-600 font-semibold text-green-700"
+                    (isActive || item.current) && !isMobile
+                      ? desktopActiveClass
                       : ""
                   }`
                 }
               >
-                {" "}
-                <span className="text-l font-bold font-playfair  text-black-500">
-                  {item.name}
-                </span>
+                {item.icon && <item.icon className="w-5 h-5 mr-2" />}
+                <span>{item.name}</span>
+                {!isMobile && (
+                  <span className="absolute inset-0 rounded-full bg-green-500/0 group-hover:bg-green-500/5 transition-colors duration-300"></span>
+                )}
               </NavLink>
-            ) : (
-              <button
-                className={`${linkClasses} flex items-center w-full text-l font-bold font-playfair  text-black-500`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  closeMobileMenu();
-                  handleLogout();
-                }}
-              >
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-              </button>
             )}
-          </div>
+          </li>
         ))}
       </>
     );
   };
 
   return (
-    <nav className="bg-white text-gray-800 shadow-md h-16 px-6 flex items-center justify-between">
-      <NavLink to="/" className="flex items-center">
-        <span className="text-2xl font-bold font-playfair  text-black-500  px-2 md:px-20">
-          Amruta's Art Gallery
-        </span>
-      </NavLink>
-
-      {/* Desktop Navigation */}
-      <ul className="hidden md:flex space-x-6">
-        <NavLinks isMobile={false} nav={navigation} />
-      </ul>
-
-      {/* Mobile Navigation (Hamburger Menu) */}
-      <div className="md:hidden">
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="text-gray-700 hover:text-green-600 focus:outline-none"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
-
-        {isMobileMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-50"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <div
-              className="absolute top-0 right-0 h-full w-64 bg-white text-gray-700 p-4 transform transition-transform duration-300 ease-in-out"
-              style={{
-                transform: isMobileMenuOpen
-                  ? "translateX(0)"
-                  : "translateX(100%)",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="absolute top-4 right-4 text-gray-700 hover:text-green-600 focus:outline-none"
-              >
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-              <div className="mt-16 space-y-2">
-                <NavLinks isMobile={true} nav={navigation} />
+    <nav
+      className={`fixed w-full z-50 transition-all duration-500 ${
+        scrolled
+          ? "bg-white shadow-lg py-2"
+          : "bg-white/90 backdrop-blur-md py-4"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center">
+          {/* Logo and Brand */}
+          <div className="flex items-center">
+            <NavLink to="/" className="flex items-center group">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-600 to-green-400 flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:shadow-green-200/50 transition-all duration-300 group-hover:scale-105">
+                AG
               </div>
-            </div>
+              <span className="ml-3 text-xl font-bold text-gray-800 tracking-tight">
+                <span className="text-green-600">Amruta's</span> Art Gallery
+              </span>
+            </NavLink>
           </div>
-        )}
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:block">
+            <ul className="flex items-center space-x-1">
+              <NavLinks />
+            </ul>
+          </div>
+
+          {/* Cart and Mobile Menu Button */}
+          <div className="flex items-center space-x-4">
+            {user && (
+              <NavLink
+                to="/cart"
+                className="relative p-2 text-gray-700 hover:text-green-600 transition-colors"
+                aria-label="Shopping Cart"
+              >
+                <ShoppingCart className="w-6 h-6" />
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-green-600 rounded-full">
+                  0
+                </span>
+              </NavLink>
+            )}
+
+            <button
+              className="md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* Mobile Navigation */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
+          <ul className="flex flex-col py-2">
+            <NavLinks isMobile={true} />
+          </ul>
+        </div>
+      )}
     </nav>
   );
 };

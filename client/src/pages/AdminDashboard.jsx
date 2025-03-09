@@ -1,7 +1,7 @@
 
 import React, { useContext, useEffect, useState } from "react";
 import { Navigate, Link } from "react-router-dom";
-import { AuthContext } from "../hooks/AuthContext";
+import  AuthContext  from "../hooks/AuthContext";
 import { 
   BarChart, Bar, LineChart, Line, PieChart, Pie, 
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
