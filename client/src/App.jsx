@@ -12,6 +12,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
+import ProductsPage from "./pages/ProductsPage"; // Added import
 
 // Lazy load admin components
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -40,7 +41,8 @@ const AppLayout = () => {
           }
         />
         <Route path="/product/:productId" element={<ProductDetail />} />
-        <Route path="/products" element={<Home />} />
+        <Route path="/products" element={<ProductsPage />} />{" "}
+        {/* Added ProductsPage route */}
         <Route path="/cart" element={<Cart />} />
         <Route
           path="/checkout"
@@ -58,7 +60,6 @@ const AppLayout = () => {
             </ProtectedRoute>
           }
         />
-
         {/* Admin Routes */}
         <Route
           path="/admin/dashboard"

@@ -3,9 +3,9 @@ import { Navigate } from "react-router-dom";
 import AuthContext from "../hooks/AuthContext";
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
-  const { user, isAuthenticated, isLoading } = useContext(AuthContext);
+  const { user, isAuthenticated, loading } = useContext(AuthContext);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
@@ -18,6 +18,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   }
 
   if (adminOnly && !user?.isAdmin) {
+    console.log("User is not admin, redirecting to dashboard");
     return <Navigate to="/dashboard" replace />;
   }
 

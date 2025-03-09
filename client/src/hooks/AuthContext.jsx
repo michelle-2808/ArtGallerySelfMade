@@ -20,9 +20,15 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  // Add axios interceptor to add token to all requests
+  useEffect(() => {
+    // This could be used to set up a global axios interceptor if needed
+    console.log("Auth context initialized");
+  }, []);
+
   const login = async (email, password) => {
-    setAuthError(null);
     setLoading(true);
+    setAuthError(null);
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -30,6 +36,7 @@ export const AuthProvider = ({ children }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        credentials: "include", // Include cookies in the request
       });
 
       if (!response.ok) {
@@ -38,12 +45,31 @@ export const AuthProvider = ({ children }) => {
       }
 
       const data = await response.json();
-      setUser(data.user);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      return data; // Return for consistency
+      console.log("Login response:", data); // Debug login response
+
+      // Store the token in localStorage for API requests
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        console.log(
+          "Token stored successfully:",
+          data.token.substring(0, 15) + "..."
+        );
+      } else {
+        console.warn("No token received from server");
+      }
+
+      // Make sure user has isAdmin property if it exists in the response
+      const userToStore = {
+        ...data.user,
+        token: data.token || null, // Add token to user object for redundancy
+      };
+
+      setUser(userToStore);
+      localStorage.setItem("user", JSON.stringify(userToStore));
+      return data;
     } catch (error) {
       setAuthError(error.message);
-      throw error; // Re-throw
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -89,17 +115,14 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/logout", { method: "POST" });
-      if (!response.ok) {
-        throw new Error("Logout failed on the server");
-      }
+      await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+      // Remove token from localStorage on logout
+      localStorage.removeItem("token");
       setUser(null);
-      localStorage.removeItem("user");
-      // NO NAVIGATION HERE!
     } catch (error) {
       console.error("Logout error:", error);
-      setAuthError(error.message || "Logout failed");
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -107,7 +130,15 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, register, logout, loading, authError }}
+      value={{
+        user,
+        login,
+        register,
+        logout,
+        loading,
+        authError,
+        isAuthenticated: !!user,
+      }}
     >
       {children}
     </AuthContext.Provider>

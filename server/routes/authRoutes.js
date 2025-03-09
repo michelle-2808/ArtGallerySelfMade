@@ -1,4 +1,3 @@
-
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -10,9 +9,13 @@ const router = express.Router();
 
 // Helper function to send password reset email (mock for now)
 const sendPasswordResetEmail = async (email, token) => {
-    const resetLink = `${process.env.BASE_URL || 'http://localhost:3000'}/reset-password/${token}`;
-    console.log(`Sending password reset email to ${email}. Reset link: ${resetLink}`);
-    // In production, implement actual email sending here
+  const resetLink = `${
+    process.env.BASE_URL || "http://localhost:3000"
+  }/reset-password/${token}`;
+  console.log(
+    `Sending password reset email to ${email}. Reset link: ${resetLink}`
+  );
+  // In production, implement actual email sending here
 };
 
 // 1. Request OTP (POST /api/auth/request-otp)
@@ -46,7 +49,9 @@ router.post("/request-otp", async (req, res) => {
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
     console.error("Error during OTP request:", error);
-    res.status(500).json({ message: "Internal server error during OTP request" });
+    res
+      .status(500)
+      .json({ message: "Internal server error during OTP request" });
   }
 });
 
@@ -105,7 +110,9 @@ router.post("/register", async (req, res) => {
     });
   } catch (error) {
     console.error("Error during registration:", error);
-    res.status(500).json({ message: "Internal server error during registration" });
+    res
+      .status(500)
+      .json({ message: "Internal server error during registration" });
   }
 });
 
@@ -138,9 +145,24 @@ router.post("/login", async (req, res) => {
     };
     req.session.save(); // Save session
 
+    // Generate JWT token
+    const secret = process.env.JWT_SECRET || "your_fallback_secret_key";
+    const token = jwt.sign(
+      { id: user._id, email: user.email, isAdmin: user.isAdmin },
+      secret,
+      { expiresIn: "24h" }
+    );
+
+    // Return token with response
     res.status(200).json({
       message: "Login successful",
-      user: { id: user._id, email: user.email, username: user.username, isAdmin: user.isAdmin },
+      token: token, // Include the JWT token in the response
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        isAdmin: user.isAdmin,
+      },
     });
   } catch (error) {
     console.error("Error during login:", error);
@@ -154,7 +176,9 @@ router.post("/logout", (req, res) => {
     req.session.destroy((err) => {
       // Destroy the session
       if (err) {
-        res.status(500).json({ message: "Could not log out, please try again" });
+        res
+          .status(500)
+          .json({ message: "Could not log out, please try again" });
       } else {
         res.status(200).json({ message: "Logout successful" });
       }
@@ -171,67 +195,71 @@ router.get("/profile", authMiddleware, (req, res) => {
 
 // 6. Request Password Reset (POST /api/auth/forgot-password)
 router.post("/forgot-password", async (req, res) => {
-    const { email } = req.body;
+  const { email } = req.body;
 
-    if (!email) {
-        return res.status(400).json({ message: "Email is required." });
+  if (!email) {
+    return res.status(400).json({ message: "Email is required." });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // Security best practice: Don't reveal whether the email exists.
+      return res.status(200).json({
+        message:
+          "If an account with that email exists, a password reset link has been sent.",
+      });
     }
 
-    try {
-        const user = await User.findOne({ email });
+    const token = crypto.randomBytes(20).toString("hex");
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
 
-        if (!user) {
-            // Security best practice: Don't reveal whether the email exists.
-            return res.status(200).json({
-                message: "If an account with that email exists, a password reset link has been sent.",
-            });
-        }
+    await sendPasswordResetEmail(email, token);
 
-        const token = crypto.randomBytes(20).toString('hex');
-        user.resetPasswordToken = token;
-        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-        await user.save();
-
-        await sendPasswordResetEmail(email, token);
-
-        res.status(200).json({
-            message: "If an account with that email exists, a password reset link has been sent.",
-        });
-    } catch (error) {
-        console.error("Error requesting password reset:", error);
-        res.status(500).json({ message: "Internal server error." });
-    }
+    res.status(200).json({
+      message:
+        "If an account with that email exists, a password reset link has been sent.",
+    });
+  } catch (error) {
+    console.error("Error requesting password reset:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
 });
 
 // 7. Reset Password (POST /api/auth/reset-password/:token)
 router.post("/reset-password/:token", async (req, res) => {
-    const { token } = req.params;
-    const { password } = req.body;
+  const { token } = req.params;
+  const { password } = req.body;
 
-    if (!password) {
-        return res.status(400).json({ message: "New password is required." });
+  if (!password) {
+    return res.status(400).json({ message: "New password is required." });
+  }
+
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired password reset token." });
     }
 
-    try {
-        const user = await User.findOne({
-            resetPasswordToken: token,
-            resetPasswordExpires: { $gt: Date.now() },
-        });
+    user.password = password; // The pre('save') hook will hash it
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
 
-        if (!user) {
-            return res.status(400).json({ message: "Invalid or expired password reset token." });
-        }
-
-        user.password = password; // The pre('save') hook will hash it
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined;
-        await user.save();
-
-        res.status(200).json({ message: "Password has been reset successfully." });
-    } catch (error) {
-        console.error("Error resetting password:", error);
-        res.status(500).json({ message: "Internal server error." });
-    }
+    res.status(200).json({ message: "Password has been reset successfully." });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
 });
 
 export default router;

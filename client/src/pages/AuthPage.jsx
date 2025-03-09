@@ -54,8 +54,13 @@ const AuthPage = () => {
     setIsLoading({ ...isLoading, login: true });
     setError(null);
     try {
-      await login(loginData.email, loginData.password);
-      navigate("/dashboard");
+      const response = await login(loginData.email, loginData.password);
+      // Redirect admin users to admin dashboard, others to regular dashboard
+      if (response.user && response.user.isAdmin) {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       setError(error.message || "Login failed");
     } finally {

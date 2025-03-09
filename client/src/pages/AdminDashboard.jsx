@@ -1,12 +1,21 @@
-
 import React, { useContext, useEffect, useState } from "react";
 import { Navigate, Link } from "react-router-dom";
-import  AuthContext  from "../hooks/AuthContext";
-import { 
-  BarChart, Bar, LineChart, Line, PieChart, Pie, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
-  ResponsiveContainer, Cell 
-} from 'recharts';
+import AuthContext from "../hooks/AuthContext";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 
 const AdminDashboard = () => {
   const { user } = useContext(AuthContext);
@@ -17,20 +26,46 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        // Fetch dashboard summary
+        // Get token from localStorage
+        let token = localStorage.getItem("token");
+
+        // If token not found, check if it's in the user object
+        if (!token && user && user.token) {
+          token = user.token;
+          // Save it to localStorage for future use
+          localStorage.setItem("token", token);
+        }
+
+        console.log(
+          "Using token:",
+          token ? token.substring(0, 15) + "..." : "No token found"
+        );
+
+        if (!token) {
+          console.error("No authentication token available");
+          setError("Authentication token not found. Please login again.");
+          setLoading(false);
+          return;
+        }
+
         const dashboardResponse = await fetch("/api/admin/dashboard", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
         });
 
         if (!dashboardResponse.ok) {
+          if (dashboardResponse.status === 401) {
+            throw new Error("Authentication failed. Please login again.");
+          }
           throw new Error("Failed to fetch dashboard data");
         }
 
@@ -40,8 +75,10 @@ const AdminDashboard = () => {
         // Fetch product analytics
         const analyticsResponse = await fetch("/api/admin/analytics/products", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
         });
 
         if (!analyticsResponse.ok) {
@@ -54,8 +91,10 @@ const AdminDashboard = () => {
         // Fetch recent orders
         const ordersResponse = await fetch("/api/admin/recent-orders", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
         });
 
         if (!ordersResponse.ok) {
@@ -106,37 +145,41 @@ const AdminDashboard = () => {
   }
 
   // Prepare data for charts
-  const productViewData = productAnalytics.map(item => ({
-    name: item.productId?.title || 'Unknown',
-    views: item.viewCount,
-    purchases: item.purchaseCount,
-    revenue: item.revenue
-  })).slice(0, 5);
+  const productViewData = productAnalytics
+    .map((item) => ({
+      name: item.productId?.title || "Unknown",
+      views: item.viewCount,
+      purchases: item.purchaseCount,
+      revenue: item.revenue,
+    }))
+    .slice(0, 5);
 
   const pieData = [
-    { name: 'Products', value: dashboardData?.totalProducts || 0 },
-    { name: 'Orders', value: dashboardData?.totalOrders || 0 },
-    { name: 'Users', value: dashboardData?.totalUsers || 0 },
+    { name: "Products", value: dashboardData?.totalProducts || 0 },
+    { name: "Orders", value: dashboardData?.totalOrders || 0 },
+    { name: "Users", value: dashboardData?.totalUsers || 0 },
   ];
 
   // Format weekly revenue data
-  const weeklyRevenueData = dashboardData?.weeklyRevenue?.map(week => ({
-    name: `Week ${week._id.week}`,
-    revenue: week.revenue,
-    orders: week.orders
-  })) || [];
+  const weeklyRevenueData =
+    dashboardData?.weeklyRevenue?.map((week) => ({
+      name: `Week ${week._id.week}`,
+      revenue: week.revenue,
+      orders: week.orders,
+    })) || [];
 
   // Format category data
-  const categoryData = dashboardData?.salesByCategory?.map(category => ({
-    name: category._id || 'Unknown',
-    revenue: category.revenue,
-    count: category.count
-  })) || [];
+  const categoryData =
+    dashboardData?.salesByCategory?.map((category) => ({
+      name: category._id || "Unknown",
+      revenue: category.revenue,
+      count: category.count,
+    })) || [];
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8 font-playfair">Admin Dashboard</h1>
-      
+
       {/* Admin Navigation Tabs */}
       <div className="flex flex-wrap border-b border-gray-200 mb-8">
         <button
@@ -188,11 +231,15 @@ const AdminDashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold mb-2">Total Products</h2>
-              <p className="text-3xl font-bold text-green-600">{dashboardData?.totalProducts}</p>
+              <p className="text-3xl font-bold text-green-600">
+                {dashboardData?.totalProducts}
+              </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold mb-2">Total Orders</h2>
-              <p className="text-3xl font-bold text-green-600">{dashboardData?.totalOrders}</p>
+              <p className="text-3xl font-bold text-green-600">
+                {dashboardData?.totalOrders}
+              </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold mb-2">Revenue</h2>
@@ -202,7 +249,9 @@ const AdminDashboard = () => {
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold mb-2">Total Users</h2>
-              <p className="text-3xl font-bold text-green-600">{dashboardData?.totalUsers}</p>
+              <p className="text-3xl font-bold text-green-600">
+                {dashboardData?.totalUsers}
+              </p>
             </div>
           </div>
 
@@ -210,7 +259,10 @@ const AdminDashboard = () => {
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Recent Orders</h2>
-              <Link to="/admin/orders" className="text-green-600 hover:text-green-800">
+              <Link
+                to="/admin/orders"
+                className="text-green-600 hover:text-green-800"
+              >
                 View All
               </Link>
             </div>
@@ -229,12 +281,18 @@ const AdminDashboard = () => {
                 <tbody>
                   {recentOrders.map((order) => (
                     <tr key={order._id} className="border-b">
-                      <td className="px-4 py-2">{order.orderNumber || order._id.substring(0, 8)}</td>
-                      <td className="px-4 py-2">{order.userId?.username || "Unknown"}</td>
+                      <td className="px-4 py-2">
+                        {order.orderNumber || order._id.substring(0, 8)}
+                      </td>
+                      <td className="px-4 py-2">
+                        {order.userId?.username || "Unknown"}
+                      </td>
                       <td className="px-4 py-2">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-4 py-2">${order.totalAmount.toFixed(2)}</td>
+                      <td className="px-4 py-2">
+                        ${order.totalAmount.toFixed(2)}
+                      </td>
                       <td className="px-4 py-2">
                         <span
                           className={`inline-block px-2 py-1 text-xs rounded-full ${
@@ -247,7 +305,8 @@ const AdminDashboard = () => {
                               : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          {order.status.charAt(0).toUpperCase() +
+                            order.status.slice(1)}
                         </span>
                       </td>
                       <td className="px-4 py-2">
@@ -286,7 +345,12 @@ const AdminDashboard = () => {
                     stroke="#00C49F"
                     activeDot={{ r: 8 }}
                   />
-                  <Line type="monotone" dataKey="orders" name="Orders" stroke="#0088FE" />
+                  <Line
+                    type="monotone"
+                    dataKey="orders"
+                    name="Orders"
+                    stroke="#0088FE"
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -295,7 +359,9 @@ const AdminDashboard = () => {
           {/* Top Products Chart */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold mb-4">Top Products by Views</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                Top Products by Views
+              </h2>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={productViewData}>
@@ -321,13 +387,18 @@ const AdminDashboard = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) =>
+                        `${name}: ${(percent * 100).toFixed(0)}%`
+                      }
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="revenue"
                     >
                       {categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
                       ))}
                     </Pie>
                     <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
@@ -352,9 +423,11 @@ const AdminDashboard = () => {
               Add New Product
             </Link>
           </div>
-          
+
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-medium mb-4">Top Performing Products</h3>
+            <h3 className="text-lg font-medium mb-4">
+              Top Performing Products
+            </h3>
             <div className="overflow-x-auto">
               <table className="w-full table-auto">
                 <thead>
@@ -380,10 +453,15 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-4 py-2">{product.viewCount}</td>
                       <td className="px-4 py-2">{product.purchaseCount}</td>
-                      <td className="px-4 py-2">${product.revenue.toFixed(2)}</td>
+                      <td className="px-4 py-2">
+                        ${product.revenue.toFixed(2)}
+                      </td>
                       <td className="px-4 py-2">
                         {product.viewCount > 0
-                          ? ((product.purchaseCount / product.viewCount) * 100).toFixed(2)
+                          ? (
+                              (product.purchaseCount / product.viewCount) *
+                              100
+                            ).toFixed(2)
                           : 0}
                         %
                       </td>
@@ -407,10 +485,16 @@ const AdminDashboard = () => {
               </table>
             </div>
             <div className="mt-4 flex justify-between">
-              <Link to="/admin/products" className="text-green-600 hover:text-green-800">
+              <Link
+                to="/admin/products"
+                className="text-green-600 hover:text-green-800"
+              >
                 View All Products
               </Link>
-              <Link to="/admin/products/new" className="text-blue-600 hover:text-blue-800">
+              <Link
+                to="/admin/products/new"
+                className="text-blue-600 hover:text-blue-800"
+              >
                 Add New Product
               </Link>
             </div>
@@ -424,7 +508,7 @@ const AdminDashboard = () => {
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Order Management</h2>
           </div>
-          
+
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-medium mb-4">Recent Orders</h3>
             <div className="overflow-x-auto">
@@ -443,12 +527,16 @@ const AdminDashboard = () => {
                 <tbody>
                   {recentOrders.map((order) => (
                     <tr key={order._id} className="border-b">
-                      <td className="px-4 py-2">{order.orderNumber || order._id.substring(0, 8)}</td>
+                      <td className="px-4 py-2">
+                        {order.orderNumber || order._id.substring(0, 8)}
+                      </td>
                       <td className="px-4 py-2">{order.userId?.username}</td>
                       <td className="px-4 py-2">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-4 py-2">${order.totalAmount.toFixed(2)}</td>
+                      <td className="px-4 py-2">
+                        ${order.totalAmount.toFixed(2)}
+                      </td>
                       <td className="px-4 py-2">
                         <span
                           className={`inline-block px-2 py-1 text-xs rounded-full ${
@@ -461,11 +549,14 @@ const AdminDashboard = () => {
                               : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          {order.status.charAt(0).toUpperCase() +
+                            order.status.slice(1)}
                         </span>
                       </td>
                       <td className="px-4 py-2">
-                        {order.trackingNumber ? order.trackingNumber : "Not assigned"}
+                        {order.trackingNumber
+                          ? order.trackingNumber
+                          : "Not assigned"}
                       </td>
                       <td className="px-4 py-2">
                         <Link
@@ -481,31 +572,63 @@ const AdminDashboard = () => {
               </table>
             </div>
             <div className="mt-4 text-right">
-              <Link to="/admin/orders" className="text-green-600 hover:text-green-800">
+              <Link
+                to="/admin/orders"
+                className="text-green-600 hover:text-green-800"
+              >
                 View All Orders
               </Link>
             </div>
           </div>
-          
+
           {/* Order Status Overview */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-medium mb-4">Order Status Overview</h3>
+              <h3 className="text-lg font-medium mb-4">
+                Order Status Overview
+              </h3>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={[
-                        { name: 'Pending', value: recentOrders.filter(o => o.status === 'pending').length },
-                        { name: 'Processing', value: recentOrders.filter(o => o.status === 'processing').length },
-                        { name: 'Shipped', value: recentOrders.filter(o => o.status === 'shipped').length },
-                        { name: 'Delivered', value: recentOrders.filter(o => o.status === 'delivered').length },
-                        { name: 'Cancelled', value: recentOrders.filter(o => o.status === 'cancelled').length }
+                        {
+                          name: "Pending",
+                          value: recentOrders.filter(
+                            (o) => o.status === "pending"
+                          ).length,
+                        },
+                        {
+                          name: "Processing",
+                          value: recentOrders.filter(
+                            (o) => o.status === "processing"
+                          ).length,
+                        },
+                        {
+                          name: "Shipped",
+                          value: recentOrders.filter(
+                            (o) => o.status === "shipped"
+                          ).length,
+                        },
+                        {
+                          name: "Delivered",
+                          value: recentOrders.filter(
+                            (o) => o.status === "delivered"
+                          ).length,
+                        },
+                        {
+                          name: "Cancelled",
+                          value: recentOrders.filter(
+                            (o) => o.status === "cancelled"
+                          ).length,
+                        },
                       ]}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) =>
+                        `${name}: ${(percent * 100).toFixed(0)}%`
+                      }
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -520,20 +643,28 @@ const AdminDashboard = () => {
                 </ResponsiveContainer>
               </div>
             </div>
-            
+
             <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-medium mb-4">Order Processing Times</h3>
+              <h3 className="text-lg font-medium mb-4">
+                Order Processing Times
+              </h3>
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-600">Average time from order to shipping</p>
+                  <p className="text-sm text-gray-600">
+                    Average time from order to shipping
+                  </p>
                   <p className="text-2xl font-bold text-green-600">2.3 days</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Average time from shipping to delivery</p>
+                  <p className="text-sm text-gray-600">
+                    Average time from shipping to delivery
+                  </p>
                   <p className="text-2xl font-bold text-green-600">4.1 days</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Total order fulfillment time</p>
+                  <p className="text-sm text-gray-600">
+                    Total order fulfillment time
+                  </p>
                   <p className="text-2xl font-bold text-green-600">6.4 days</p>
                 </div>
               </div>
@@ -558,7 +689,7 @@ const AdminDashboard = () => {
               </button>
             </div>
           </div>
-          
+
           {/* Revenue Chart */}
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-medium mb-4">Revenue Trends</h3>
@@ -593,7 +724,7 @@ const AdminDashboard = () => {
               </ResponsiveContainer>
             </div>
           </div>
-          
+
           {/* Category and Product Performance */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -615,7 +746,7 @@ const AdminDashboard = () => {
                 </ResponsiveContainer>
               </div>
             </div>
-            
+
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-lg font-medium mb-4">Revenue vs Views</h3>
               <div className="h-80">
@@ -624,17 +755,31 @@ const AdminDashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-                    <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      stroke="#82ca9d"
+                    />
                     <Tooltip />
                     <Legend />
-                    <Bar yAxisId="left" dataKey="views" name="Views" fill="#8884d8" />
-                    <Bar yAxisId="right" dataKey="revenue" name="Revenue ($)" fill="#82ca9d" />
+                    <Bar
+                      yAxisId="left"
+                      dataKey="views"
+                      name="Views"
+                      fill="#8884d8"
+                    />
+                    <Bar
+                      yAxisId="right"
+                      dataKey="revenue"
+                      name="Revenue ($)"
+                      fill="#82ca9d"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
           </div>
-          
+
           {/* Customer Insights */}
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-medium mb-4">Customer Insights</h3>
