@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -11,6 +12,10 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Contact from "./pages/Contact";
 import AuthPage from "./pages/AuthPage";
+
+// Lazy load admin components
+const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard"));
+const ProductAnalytics = React.lazy(() => import("./pages/ProductAnalytics"));
 
 const AppLayout = () => {
   const { pathname } = useLocation();
@@ -27,6 +32,28 @@ const AppLayout = () => {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        
+        {/* Admin Routes */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute>
+              <React.Suspense fallback={<div>Loading...</div>}>
+                <AdminDashboard />
+              </React.Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/product/:productId"
+          element={
+            <ProtectedRoute>
+              <React.Suspense fallback={<div>Loading...</div>}>
+                <ProductAnalytics />
+              </React.Suspense>
             </ProtectedRoute>
           }
         />

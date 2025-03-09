@@ -10,6 +10,8 @@ import dotenv from "dotenv";
 import { User } from "./models/index.js"; // Import the User model
 // CORRECT (for modern Node.js)
 import crypto from "crypto";
+import path from 'path'; //Import path module
+
 
 dotenv.config();
 
@@ -344,164 +346,16 @@ app.post("/api/reset-password/:token", async (req, res) => {
 
 // --- Existing Routes (Register, Request OTP, Login, Logout, Profile) ---
 
-// 1. Request OTP (POST /api/request-otp)
-app.post("/api/request-otp", async (req, res) => {
-  const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
-  }
+// Import routes
+import adminRoutes from "./routes/adminRoutes.js";
 
-  try {
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({ message: "Email already registered" });
-    }
+// Serve static files from uploads folder
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-    // Generate OTP (simple example, use a library in production)
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiration = Date.now() + 10 * 60 * 1000; // 10 minutes
+// Register routes
+app.use('/api/admin', adminRoutes);
 
-    // Store the OTP in the session (instead of saving it directly to the user)
-    req.session.otp = otp;
-    req.session.otpExpiration = otpExpiration;
-    req.session.email = email; // Store email to verify
-    req.session.password = await bcrypt.hash(password, 10); // Hash and store password
-    req.session.save(); // Save the session explicitly
-
-    // Send OTP (replace with actual sending, e.g., Nodemailer)
-    console.log(`Sending OTP ${otp} to ${email}`); // Replace with actual sending
-    res.status(200).json({ message: "OTP sent successfully" });
-  } catch (error) {
-    console.error("Error during OTP request:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error during OTP request" });
-  }
-});
-
-// 2. Register (POST /api/register)
-app.post("/api/register", async (req, res) => {
-  const { otp } = req.body;
-
-  if (!otp) {
-    return res.status(400).json({ message: "OTP is required" });
-  }
-  // Check if there's a pending registration in the session
-  if (!req.session.otp || !req.session.email || !req.session.password) {
-    return res.status(400).json({ message: "Invalid registration attempt" });
-  }
-
-  // Verify OTP
-  if (req.session.otp !== otp || Date.now() > req.session.otpExpiration) {
-    return res.status(400).json({ message: "Invalid or expired OTP" });
-  }
-
-  const email = req.session.email;
-  const password = req.session.password;
-
-  try {
-    //Create user
-    const newUser = new User({
-      email,
-      password,
-      username: email.split("@")[0], //create username
-    });
-    await newUser.save();
-
-    // Clear the OTP data from the session
-    delete req.session.otp;
-    delete req.session.otpExpiration;
-    delete req.session.email;
-    delete req.session.password;
-
-    // Set user in the session (log them in immediately)
-    req.session.user = {
-      id: newUser._id,
-      email: newUser.email,
-      username: newUser.username,
-    }; // Store user info in session
-    req.session.save();
-
-    res.status(201).json({
-      message: "Registration successful",
-      user: {
-        id: newUser._id,
-        email: newUser.email,
-        username: newUser.username,
-      },
-    });
-  } catch (error) {
-    console.error("Error during registration:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error during registration" });
-  }
-});
-
-// 3. Login (POST /api/login)
-app.post("/api/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
-  }
-
-  try {
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    const passwordMatch = await user.checkPassword(password); //use checkPassword
-    if (!passwordMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    // Set user information in the session
-    req.session.user = {
-      id: user._id,
-      email: user.email,
-      username: user.username,
-    };
-    req.session.save(); // Save session
-
-    res
-      .status(200)
-      .json({
-        message: "Login successful",
-        user: { id: user._id, email: user.email, username: user.username },
-      });
-  } catch (error) {
-    console.error("Error during login:", error);
-    res.status(500).json({ message: "Internal server error during login" });
-  }
-});
-
-// 4. Logout (POST /api/logout)
-app.post("/api/logout", (req, res) => {
-  if (req.session) {
-    req.session.destroy((err) => {
-      // Destroy the session
-      if (err) {
-        res
-          .status(500)
-          .json({ message: "Could not log out, please try again" });
-      } else {
-        res.status(200).json({ message: "Logout successful" });
-      }
-    });
-  } else {
-    res.status(200).json({ message: "Logout successful" }); // Already logged out
-  }
-});
-
-// 5. Protected Route Example (GET /api/profile)
-app.get("/api/profile", authenticateToken, (req, res) => {
-  res.status(200).json({ message: "Profile accessed", user: req.user });
-});
 
 // --- Server Setup ---
 const server = http.createServer(app);
@@ -525,8 +379,3 @@ async function startServer() {
 }
 
 startServer();
-// In your server.js file, add this near your other route imports and usage
-import adminRoutes from "./routes/adminRoutes.js";
-
-// Add this with your other app.use statements
-app.use("/api/admin", adminRoutes);

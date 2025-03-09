@@ -1,5 +1,4 @@
 
-// models/AdminAnalytics.js
 import mongoose from "mongoose";
 
 const adminAnalyticsSchema = new mongoose.Schema(
@@ -21,15 +20,25 @@ const adminAnalyticsSchema = new mongoose.Schema(
       type: Number, 
       default: 0 
     },
-    lastUpdated: { 
-      type: Date, 
-      default: Date.now 
+    weeklyStats: [{
+      week: String, // Format: YYYY-WW
+      views: { type: Number, default: 0 },
+      purchases: { type: Number, default: 0 },
+      revenue: { type: Number, default: 0 }
+    }],
+    categoryPerformance: {
+      type: Map,
+      of: {
+        views: { type: Number, default: 0 },
+        purchases: { type: Number, default: 0 },
+        revenue: { type: Number, default: 0 }
+      }
     }
   },
   { timestamps: true }
 );
 
-// Adding indexes for efficient querying
+// Index for quick lookups by productId
 adminAnalyticsSchema.index({ productId: 1 });
 
 const AdminAnalytics = mongoose.model("AdminAnalytics", adminAnalyticsSchema);

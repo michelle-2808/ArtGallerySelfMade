@@ -1,8 +1,22 @@
 
-import { useState, useEffect, useContext } from "react";
-import { useParams, Navigate } from "react-router-dom";
-import AuthContext from "../hooks/AuthContext";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import React, { useContext, useEffect, useState } from "react";
+import { useParams, Navigate, Link } from "react-router-dom";
+import { AuthContext } from "../hooks/AuthContext";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const ProductAnalytics = () => {
   const { productId } = useParams();
@@ -11,10 +25,14 @@ const ProductAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [timeRange, setTimeRange] = useState("all");
+
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
   useEffect(() => {
     const fetchProductAnalytics = async () => {
       try {
+        setLoading(true);
         // Fetch product details
         const productResponse = await fetch(`/api/products/${productId}`, {
           headers: {
@@ -50,13 +68,13 @@ const ProductAnalytics = () => {
       }
     };
 
-    if (user && user.role === "admin" && productId) {
+    if (user && user.isAdmin && productId) {
       fetchProductAnalytics();
     }
   }, [user, productId]);
 
   // If user is not admin, redirect to home
-  if (user && user.role !== "admin") {
+  if (user && !user.isAdmin) {
     return <Navigate to="/" />;
   }
 
@@ -83,84 +101,197 @@ const ProductAnalytics = () => {
     );
   }
 
-  // Mock time-series data for the chart (in a real app, this would come from the backend)
-  const timeSeriesData = [
-    { date: '2023-01', views: 24, purchases: 4, revenue: 400 },
-    { date: '2023-02', views: 37, purchases: 7, revenue: 700 },
-    { date: '2023-03', views: 45, purchases: 12, revenue: 1200 },
-    { date: '2023-04', views: 52, purchases: 15, revenue: 1500 },
-    { date: '2023-05', views: 49, purchases: 10, revenue: 1000 },
-    { date: '2023-06', views: 60, purchases: 18, revenue: 1800 },
+  // Prepare data for weekly statistics chart
+  const weeklyStats = analytics?.weeklyStats || [];
+  const filteredWeeklyStats = timeRange === "all" 
+    ? weeklyStats 
+    : weeklyStats.slice(-parseInt(timeRange));
+
+  const weeklyChartData = filteredWeeklyStats.map(week => ({
+    name: week.week,
+    views: week.views,
+    purchases: week.purchases,
+    revenue: week.revenue
+  }));
+
+  // Prepare audience data
+  const audienceData = [
+    { name: "Direct", value: 45 },
+    { name: "Search", value: 30 },
+    { name: "Social", value: 15 },
+    { name: "Referral", value: 10 }
   ];
+
+  // Calculate conversion rate
+  const conversionRate = analytics?.viewCount > 0
+    ? ((analytics.purchaseCount / analytics.viewCount) * 100).toFixed(2)
+    : 0;
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 font-playfair">
-        Product Analytics: {productData?.title || "Unknown Product"}
-      </h1>
+      <div className="mb-8">
+        <Link to="/admin/dashboard" className="text-green-600 hover:text-green-800">
+          &larr; Back to Dashboard
+        </Link>
+      </div>
 
-      {/* Product Info */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-        <div className="flex flex-col md:flex-row">
-          <div className="md:w-1/4 mb-4 md:mb-0">
-            {productData?.imageUrl && (
-              <img
-                src={productData.imageUrl}
-                alt={productData.title}
-                className="rounded-lg w-full object-cover"
-                style={{ maxHeight: "200px" }}
-              />
-            )}
-          </div>
-          <div className="md:w-3/4 md:pl-6">
-            <h2 className="text-2xl font-bold mb-2">{productData?.title}</h2>
-            <p className="text-gray-600 mb-2">{productData?.description}</p>
-            <p className="text-xl font-bold text-green-600">${productData?.price?.toFixed(2)}</p>
-            <div className="mt-4">
-              <p className="text-gray-700">
-                <span className="font-semibold">Category:</span> {productData?.category}
-              </p>
-              <p className="text-gray-700">
-                <span className="font-semibold">In Stock:</span> {productData?.stock || 0} units
-              </p>
-            </div>
+      {/* Product Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-center mb-8">
+        <div className="mr-6 mb-4 md:mb-0">
+          <img
+            src={productData?.imageUrl}
+            alt={productData?.title}
+            className="w-24 h-24 object-cover rounded-lg shadow-md"
+          />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold font-playfair">{productData?.title}</h1>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
+              ${productData?.price?.toFixed(2)}
+            </span>
+            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+              {productData?.category}
+            </span>
+            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">
+              Stock: {productData?.stockQuantity}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Analytics Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {/* Time Range Selector */}
+      <div className="mb-6">
+        <label className="mr-2 font-medium text-gray-700">Time Range:</label>
+        <select 
+          value={timeRange} 
+          onChange={(e) => setTimeRange(e.target.value)}
+          className="border rounded px-2 py-1"
+        >
+          <option value="all">All Time</option>
+          <option value="4">Last 4 Weeks</option>
+          <option value="12">Last 12 Weeks</option>
+          <option value="26">Last 6 Months</option>
+          <option value="52">Last Year</option>
+        </select>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold text-gray-700">Total Views</h2>
+          <h2 className="text-xl font-semibold mb-2">Total Views</h2>
           <p className="text-3xl font-bold text-green-600">{analytics?.viewCount || 0}</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold text-gray-700">Total Purchases</h2>
+          <h2 className="text-xl font-semibold mb-2">Total Purchases</h2>
           <p className="text-3xl font-bold text-green-600">{analytics?.purchaseCount || 0}</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold text-gray-700">Total Revenue</h2>
+          <h2 className="text-xl font-semibold mb-2">Total Revenue</h2>
           <p className="text-3xl font-bold text-green-600">
             ${analytics?.revenue?.toFixed(2) || "0.00"}
           </p>
         </div>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-2">Conversion Rate</h2>
+          <p className="text-3xl font-bold text-green-600">{conversionRate}%</p>
+        </div>
       </div>
 
-      {/* Performance Over Time Chart */}
+      {/* Weekly Performance Chart */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-        <h2 className="text-xl font-semibold mb-4">Performance Over Time</h2>
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={timeSeriesData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="views" stroke="#8884d8" name="Views" />
-            <Line type="monotone" dataKey="purchases" stroke="#82ca9d" name="Purchases" />
-            <Line type="monotone" dataKey="revenue" stroke="#ff7300" name="Revenue ($)" />
-          </LineChart>
-        </ResponsiveContainer>
+        <h2 className="text-xl font-semibold mb-4">Weekly Performance</h2>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={weeklyChartData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
+              <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+              <Tooltip />
+              <Legend />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="views"
+                name="Views"
+                stroke="#8884d8"
+                activeDot={{ r: 8 }}
+              />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="purchases"
+                name="Purchases"
+                stroke="#FF8042"
+                activeDot={{ r: 8 }}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="revenue"
+                name="Revenue ($)"
+                stroke="#82ca9d"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Performance Metrics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-4">Audience Source</h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={audienceData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {audienceData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-4">Related Products Performance</h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={[
+                  { name: "Product A", sales: 35, revenue: 420 },
+                  { name: "Product B", sales: 28, revenue: 336 },
+                  { name: "Product C", sales: 42, revenue: 504 },
+                  { name: "Product D", sales: 16, revenue: 192 }
+                ]}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="sales" name="Sales" fill="#8884d8" />
+                <Bar dataKey="revenue" name="Revenue ($)" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Conversion Metrics */}
