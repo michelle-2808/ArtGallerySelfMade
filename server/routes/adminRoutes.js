@@ -367,6 +367,110 @@ router.delete("/products/:productId", async (req, res) => {
   }
 });
 
+// Category management routes
+router.get("/category-stats", async (req, res) => {
+  try {
+    // Get counts of products by category
+    const categoryCounts = await Product.aggregate([
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $project: { _id: 0, category: "$_id", count: 1 } }
+    ]);
+    
+    // Transform to object format for easier frontend use
+    const categoryCountsObject = {};
+    categoryCounts.forEach(item => {
+      categoryCountsObject[item.category] = item.count;
+    });
+    
+    res.json({ categoryCounts: categoryCountsObject });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching category statistics", error: error.message });
+  }
+});
+
+// Get a single product by ID
+router.get("/products/:productId", async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const product = await Product.findById(productId);
+    
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching product", error: error.message });
+  }
+});
+
+// Update a product
+router.put("/products/:productId", upload.single("image"), async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const {
+      title,
+      description,
+      price,
+      category,
+      tags,
+      stockQuantity,
+      featured,
+      width,
+      height,
+      depth,
+      unit,
+      artist,
+      creationYear,
+      imageUrl
+    } = req.body;
+    
+    const product = await Product.findById(productId);
+    
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    
+    // Use uploaded file path or provided imageUrl or keep existing
+    let productImageUrl = product.imageUrl;
+    if (req.file) {
+      productImageUrl = `/uploads/${req.file.filename}`;
+    } else if (imageUrl) {
+      productImageUrl = imageUrl;
+    }
+    
+    const tagsArray = tags ? tags.split(",").map(tag => tag.trim()) : [];
+    
+    // Update product fields
+    product.title = title;
+    product.description = description;
+    product.price = parseFloat(price);
+    product.imageUrl = productImageUrl;
+    product.category = category;
+    product.tags = tagsArray;
+    product.stockQuantity = parseInt(stockQuantity);
+    product.isAvailable = parseInt(stockQuantity) > 0;
+    product.featured = featured === "true" || featured === true;
+    
+    // Update dimensions if provided
+    product.dimensions = {
+      width: width ? parseFloat(width) : undefined,
+      height: height ? parseFloat(height) : undefined,
+      depth: depth ? parseFloat(depth) : undefined,
+      unit: unit || "cm"
+    };
+    
+    product.artist = artist;
+    product.creationYear = creationYear ? parseInt(creationYear) : undefined;
+    
+    await product.save();
+    
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating product", error: error.message });
+  }
+});
+
 // Order management routes
 
 // Get all orders with filtering and pagination

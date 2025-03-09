@@ -406,9 +406,12 @@ const AdminDashboard = () => {
                 </tbody>
               </table>
             </div>
-            <div className="mt-4 text-right">
+            <div className="mt-4 flex justify-between">
               <Link to="/admin/products" className="text-green-600 hover:text-green-800">
                 View All Products
+              </Link>
+              <Link to="/admin/products/new" className="text-blue-600 hover:text-blue-800">
+                Add New Product
               </Link>
             </div>
           </div>

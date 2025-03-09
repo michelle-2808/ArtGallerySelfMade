@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, lazy } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,7 +6,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { AuthProvider } from "./hooks/AuthContext";
-import ProtectedRoute from "./routes/ProtectedRoute";
+import ProtectedRoute from "./routes/ProtectedRoute"; // Assumed existence
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
@@ -14,8 +14,11 @@ import Contact from "./pages/Contact";
 import AuthPage from "./pages/AuthPage";
 
 // Lazy load admin components
-const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard"));
-const ProductAnalytics = React.lazy(() => import("./pages/ProductAnalytics"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const ProductAnalytics = lazy(() => import("./pages/ProductAnalytics"));
+const ProductManagement = lazy(() => import("./pages/ProductManagement"));
+const ProductForm = lazy(() => import("./pages/ProductForm"));
+const CategoryManagement = lazy(() => import("./pages/CategoryManagement"));
 
 const AppLayout = () => {
   const { pathname } = useLocation();
@@ -35,15 +38,15 @@ const AppLayout = () => {
             </ProtectedRoute>
           }
         />
-        
+
         {/* Admin Routes */}
         <Route
           path="/admin/dashboard"
           element={
             <ProtectedRoute>
-              <React.Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div>Loading...</div>}>
                 <AdminDashboard />
-              </React.Suspense>
+              </Suspense>
             </ProtectedRoute>
           }
         />
@@ -51,9 +54,49 @@ const AppLayout = () => {
           path="/admin/product/:productId"
           element={
             <ProtectedRoute>
-              <React.Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<div>Loading...</div>}>
                 <ProductAnalytics />
-              </React.Suspense>
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <ProtectedRoute>
+              <Suspense fallback={<div>Loading...</div>}>
+                <ProductManagement />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products/new"
+          element={
+            <ProtectedRoute>
+              <Suspense fallback={<div>Loading...</div>}>
+                <ProductForm />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products/edit/:productId"
+          element={
+            <ProtectedRoute>
+              <Suspense fallback={<div>Loading...</div>}>
+                <ProductForm />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/categories"
+          element={
+            <ProtectedRoute>
+              <Suspense fallback={<div>Loading...</div>}>
+                <CategoryManagement />
+              </Suspense>
             </ProtectedRoute>
           }
         />
@@ -71,6 +114,3 @@ const App = () => (
 );
 
 export default App;
-// In your App.jsx or router configuration, add these routes
-<Route path="/admin/dashboard" element={<AdminDashboard />} />
-<Route path="/admin/product/:productId" element={<ProductAnalytics />} />

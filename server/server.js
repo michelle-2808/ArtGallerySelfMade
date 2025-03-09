@@ -11,6 +11,7 @@ import { User } from "./models/index.js"; // Import the User model
 // CORRECT (for modern Node.js)
 import crypto from "crypto";
 import path from 'path'; //Import path module
+import fs from 'fs'; // Added for file system operations
 
 
 dotenv.config();
@@ -350,8 +351,14 @@ app.post("/api/reset-password/:token", async (req, res) => {
 // Import routes
 import adminRoutes from "./routes/adminRoutes.js";
 
-// Serve static files from uploads folder
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(uploadsDir));
 
 // Register routes
 app.use('/api/admin', adminRoutes);
