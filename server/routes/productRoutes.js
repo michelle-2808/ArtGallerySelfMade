@@ -1,7 +1,7 @@
 
 import express from 'express';
 import { Product } from '../models/index.js';
-import { isAuthenticated, isAdmin } from '../middleware/authMiddleware.js';
+import { authMiddleware, isAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
