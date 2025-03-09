@@ -5,5 +5,6 @@ import Order from "./Order.js";
 import OrderItem from "./OrderItem.js";
 import CartItem from "./CartItem.js";
 import OtpCode from "./OtpCode.js";
+import AdminAnalytics from "./AdminAnalytics.js";
 
-export { User, Product, Order, OrderItem, CartItem, OtpCode };
+export { User, Product, Order, OrderItem, CartItem, OtpCode, AdminAnalytics };

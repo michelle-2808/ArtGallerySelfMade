@@ -525,3 +525,8 @@ async function startServer() {
 }
 
 startServer();
+// In your server.js file, add this near your other route imports and usage
+import adminRoutes from "./routes/adminRoutes.js";
+
+// Add this with your other app.use statements
+app.use("/api/admin", adminRoutes);

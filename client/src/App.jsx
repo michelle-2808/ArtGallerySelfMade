@@ -44,3 +44,6 @@ const App = () => (
 );
 
 export default App;
+// In your App.jsx or router configuration, add these routes
+<Route path="/admin/dashboard" element={<AdminDashboard />} />
+<Route path="/admin/product/:productId" element={<ProductAnalytics />} />
