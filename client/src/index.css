@@ -129,3 +129,31 @@ html, body {
   -ms-overflow-style: none;  /* Hide scrollbar for IE/Edge */
   scrollbar-width: none;  /* Hide scrollbar for Firefox */
 }
+
+
+/* Add padding top to account for navbar height */
+.container {
+  padding-top: 4rem; /* 64px, adjust based on your navbar height */
+}
+
+/* For mobile devices */
+@media (max-width: 768px) {
+  .container {
+    padding-top: 3.5rem; /* 56px */
+  }
+}
+
+body {
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/* Fix main content area to account for fixed navbar */
+#root {
+  padding-top: 60px; /* Adjust based on your navbar height */
+}
+
+/* AuthPage doesn't have a navbar, so remove padding */
+.auth-page-container {
+  margin-top: -60px; /* Counteract the root padding */
+}

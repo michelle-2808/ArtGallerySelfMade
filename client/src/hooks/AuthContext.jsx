@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
         method: "POST",
       });
       // Remove token from localStorage on logout
-      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       setUser(null);
     } catch (error) {
       console.error("Logout error:", error);

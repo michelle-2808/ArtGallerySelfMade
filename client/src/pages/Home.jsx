@@ -48,7 +48,7 @@ const Home = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen page-container">
       <HeroSection />
 
       <div className="container mx-auto px-4 py-12">

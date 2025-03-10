@@ -1,10 +1,15 @@
-
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const CATEGORIES = [
-  'Painting', 'Sculpture', 'Photography', 'Digital Art', 'Prints', 'Mixed Media', 'Other'
+  "Painting",
+  "Sculpture",
+  "Photography",
+  "Digital Art",
+  "Prints",
+  "Mixed Media",
+  "Other",
 ];
 
 const ProductManagement = () => {
@@ -12,9 +17,9 @@ const ProductManagement = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [filterCategory, setFilterCategory] = useState('');
+  const [filterCategory, setFilterCategory] = useState("");
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     fetchProducts();
   }, [currentPage, filterCategory]);
@@ -22,33 +27,62 @@ const ProductManagement = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      // Get token from localStorage
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.error("Authentication token not found");
+        setLoading(false);
+        return;
+      }
+
       const query = new URLSearchParams({
         page: currentPage,
-        limit: 10
+        limit: 10,
       });
-      
+
       if (filterCategory) {
-        query.append('category', filterCategory);
+        query.append("category", filterCategory);
       }
-      
-      const response = await axios.get(`/api/admin/products?${query}`);
+
+      const response = await axios.get(`/api/admin/products?${query}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setProducts(response.data.products);
-      setTotalPages(response.data.pagination.pages);
+      setTotalPages(response.data.pagination.pages || 1);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
       setLoading(false);
     }
   };
 
   const handleDelete = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
       try {
-        await axios.delete(`/api/admin/products/${productId}`);
+        // Get token from localStorage
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          alert("Authentication token not found. Please login again.");
+          return;
+        }
+
+        await axios.delete(`/api/admin/products/${productId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         fetchProducts();
       } catch (error) {
-        console.error('Error deleting product:', error);
-        alert('Failed to delete product');
+        console.error("Error deleting product:", error);
+        alert(
+          "Failed to delete product: " +
+            (error.response?.data?.message || error.message)
+        );
       }
     }
   };
@@ -73,7 +107,10 @@ const ProductManagement = () => {
       <div className="mb-6 bg-white p-4 rounded-lg shadow">
         <div className="flex flex-wrap items-center gap-4">
           <div>
-            <label htmlFor="categoryFilter" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="categoryFilter"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Filter by Category
             </label>
             <select
@@ -87,14 +124,16 @@ const ProductManagement = () => {
             >
               <option value="">All Categories</option>
               {CATEGORIES.map((category) => (
-                <option key={category} value={category}>{category}</option>
+                <option key={category} value={category}>
+                  {category}
+                </option>
               ))}
             </select>
           </div>
-          
+
           <button
             onClick={() => {
-              setFilterCategory('');
+              setFilterCategory("");
               setCurrentPage(1);
             }}
             className="text-blue-600 hover:text-blue-800 mt-4"
@@ -136,7 +175,10 @@ const ProductManagement = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {products.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                    <td
+                      colSpan="6"
+                      className="px-6 py-4 text-center text-gray-500"
+                    >
                       No products found
                     </td>
                   </tr>
@@ -153,7 +195,9 @@ const ProductManagement = () => {
                             />
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{product.title}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {product.title}
+                            </div>
                             <div className="text-sm text-gray-500 truncate w-48">
                               {product.description}
                             </div>
@@ -161,21 +205,29 @@ const ProductManagement = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
+                        <div className="text-sm text-gray-900">
+                          ${product.price.toFixed(2)}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{product.category}</div>
+                        <div className="text-sm text-gray-900">
+                          {product.category}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{product.stockQuantity}</div>
+                        <div className="text-sm text-gray-900">
+                          {product.stockQuantity}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          product.isAvailable 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {product.isAvailable ? 'Available' : 'Unavailable'}
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            product.isAvailable
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {product.isAvailable ? "Available" : "Unavailable"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -204,28 +256,32 @@ const ProductManagement = () => {
             <div className="flex justify-center mt-6">
               <nav className="flex items-center">
                 <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
                   disabled={currentPage === 1}
                   className={`px-3 py-1 rounded-l ${
                     currentPage === 1
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   Previous
                 </button>
-                
+
                 <div className="px-4 py-1 bg-white text-gray-700">
                   Page {currentPage} of {totalPages}
                 </div>
-                
+
                 <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
                   disabled={currentPage === totalPages}
                   className={`px-3 py-1 rounded-r ${
                     currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   Next

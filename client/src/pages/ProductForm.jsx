@@ -1,171 +1,210 @@
-
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const CATEGORIES = [
-  'Painting', 'Sculpture', 'Photography', 'Digital Art', 'Prints', 'Mixed Media', 'Other'
+  "Painting",
+  "Sculpture",
+  "Photography",
+  "Digital Art",
+  "Prints",
+  "Mixed Media",
+  "Other",
 ];
 
 const ProductForm = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const isEditMode = !!productId;
-  
+
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    price: '',
-    category: 'Painting',
-    tags: '',
-    stockQuantity: '',
+    title: "",
+    description: "",
+    price: "",
+    category: "Painting",
+    tags: "",
+    stockQuantity: "",
     featured: false,
-    width: '',
-    height: '',
-    depth: '',
-    unit: 'cm',
-    artist: '',
-    creationYear: '',
-    imageUrl: ''
+    width: "",
+    height: "",
+    depth: "",
+    unit: "cm",
+    artist: "",
+    creationYear: "",
+    imageUrl: "",
   });
-  
+
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
+  const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   useEffect(() => {
     if (isEditMode) {
       fetchProduct();
     }
   }, [productId]);
-  
+
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/admin/products/${productId}`);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Authentication token not found. Please login again.");
+        setLoading(false);
+        return;
+      }
+      const response = await axios.get(`/api/admin/products/${productId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const product = response.data;
-      
+
       setFormData({
         title: product.title,
         description: product.description,
         price: product.price.toString(),
         category: product.category,
-        tags: product.tags?.join(', ') || '',
+        tags: product.tags?.join(", ") || "",
         stockQuantity: product.stockQuantity.toString(),
         featured: product.featured || false,
-        width: product.dimensions?.width?.toString() || '',
-        height: product.dimensions?.height?.toString() || '',
-        depth: product.dimensions?.depth?.toString() || '',
-        unit: product.dimensions?.unit || 'cm',
-        artist: product.artist || '',
-        creationYear: product.creationYear?.toString() || '',
-        imageUrl: product.imageUrl || ''
+        width: product.dimensions?.width?.toString() || "",
+        height: product.dimensions?.height?.toString() || "",
+        depth: product.dimensions?.depth?.toString() || "",
+        unit: product.dimensions?.unit || "cm",
+        artist: product.artist || "",
+        creationYear: product.creationYear?.toString() || "",
+        imageUrl: product.imageUrl || "",
       });
-      
+
       setImagePreview(product.imageUrl);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching product:', error);
-      setError('Failed to load product data');
+      console.error("Error fetching product:", error);
+      setError(error.response?.data?.message || "Failed to load product data");
       setLoading(false);
     }
   };
-  
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
-  
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
-      setFormData(prev => ({ ...prev, imageUrl: '' })); // Clear remote URL when file is selected
+      setFormData((prev) => ({ ...prev, imageUrl: "" })); // Clear remote URL when file is selected
     }
   };
-  
+
   const handleRemoveImage = () => {
     setImageFile(null);
-    setImagePreview('');
-    setFormData(prev => ({ ...prev, imageUrl: '' }));
+    setImagePreview("");
+    setFormData((prev) => ({ ...prev, imageUrl: "" }));
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Basic validation
-    if (!formData.title || !formData.description || !formData.price || !formData.category || !formData.stockQuantity) {
-      setError('Please fill all required fields');
+    if (
+      !formData.title ||
+      !formData.description ||
+      !formData.price ||
+      !formData.category ||
+      !formData.stockQuantity
+    ) {
+      setError("Please fill all required fields");
       return;
     }
-    
+
     if (!imageFile && !formData.imageUrl && !imagePreview) {
-      setError('Please provide an image');
+      setError("Please provide an image");
       return;
     }
-    
+
     try {
       setLoading(true);
-      setError('');
-      
-      // Create FormData object for file upload
+      setError("");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Authentication token not found. Please login again.");
+        setLoading(false);
+        return;
+      }
+
       const submitData = new FormData();
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== '') {
+      Object.keys(formData).forEach((key) => {
+        if (formData[key] !== "") {
           submitData.append(key, formData[key]);
         }
       });
-      
+
       if (imageFile) {
-        submitData.append('image', imageFile);
+        submitData.append("image", imageFile);
       }
-      
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      };
+
       let response;
       if (isEditMode) {
-        response = await axios.put(`/api/admin/products/${productId}`, submitData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        response = await axios.put(
+          `/api/admin/products/${productId}`,
+          submitData,
+          config
+        );
       } else {
-        response = await axios.post('/api/admin/products', submitData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        response = await axios.post("/api/admin/products", submitData, config);
       }
-      
-      navigate('/admin/products');
+
+      navigate("/admin/products");
     } catch (error) {
-      console.error('Error saving product:', error);
-      setError(error.response?.data?.message || 'Failed to save product');
+      console.error("Error saving product:", error);
+      setError(error.response?.data?.message || "Failed to save product");
       setLoading(false);
     }
   };
-  
+
   if (loading && isEditMode) {
     return <div className="text-center py-8">Loading product data...</div>;
   }
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">
-        {isEditMode ? 'Edit Product' : 'Add New Product'}
+        {isEditMode ? "Edit Product" : "Add New Product"}
       </h1>
-      
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
-      
-      <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
+
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow-md rounded-lg p-6"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left Column */}
           <div className="space-y-6">
             <div>
-              <label className="block text-gray-700 font-medium mb-2" htmlFor="title">
+              <label
+                className="block text-gray-700 font-medium mb-2"
+                htmlFor="title"
+              >
                 Title *
               </label>
               <input
@@ -178,9 +217,12 @@ const ProductForm = () => {
                 required
               />
             </div>
-            
+
             <div>
-              <label className="block text-gray-700 font-medium mb-2" htmlFor="description">
+              <label
+                className="block text-gray-700 font-medium mb-2"
+                htmlFor="description"
+              >
                 Description *
               </label>
               <textarea
@@ -193,9 +235,12 @@ const ProductForm = () => {
                 required
               ></textarea>
             </div>
-            
+
             <div>
-              <label className="block text-gray-700 font-medium mb-2" htmlFor="price">
+              <label
+                className="block text-gray-700 font-medium mb-2"
+                htmlFor="price"
+              >
                 Price ($) *
               </label>
               <input
@@ -210,9 +255,12 @@ const ProductForm = () => {
                 required
               />
             </div>
-            
+
             <div>
-              <label className="block text-gray-700 font-medium mb-2" htmlFor="category">
+              <label
+                className="block text-gray-700 font-medium mb-2"
+                htmlFor="category"
+              >
                 Category *
               </label>
               <select
@@ -223,14 +271,19 @@ const ProductForm = () => {
                 className="border border-gray-300 rounded w-full py-2 px-3"
                 required
               >
-                {CATEGORIES.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                {CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
                 ))}
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-gray-700 font-medium mb-2" htmlFor="tags">
+              <label
+                className="block text-gray-700 font-medium mb-2"
+                htmlFor="tags"
+              >
                 Tags (Comma separated)
               </label>
               <input
@@ -243,9 +296,12 @@ const ProductForm = () => {
                 placeholder="abstract, colorful, modern"
               />
             </div>
-            
+
             <div>
-              <label className="block text-gray-700 font-medium mb-2" htmlFor="stockQuantity">
+              <label
+                className="block text-gray-700 font-medium mb-2"
+                htmlFor="stockQuantity"
+              >
                 Stock Quantity *
               </label>
               <input
@@ -259,7 +315,7 @@ const ProductForm = () => {
                 required
               />
             </div>
-            
+
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -274,7 +330,7 @@ const ProductForm = () => {
               </label>
             </div>
           </div>
-          
+
           {/* Right Column */}
           <div className="space-y-6">
             <div>
@@ -314,7 +370,7 @@ const ProductForm = () => {
                       />
                     </svg>
                   )}
-                  
+
                   <div className="flex text-sm text-gray-600">
                     <label
                       htmlFor="image"
@@ -332,12 +388,17 @@ const ProductForm = () => {
                     </label>
                     <p className="pl-1">or drag and drop</p>
                   </div>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                  <p className="text-xs text-gray-500">
+                    PNG, JPG, GIF up to 10MB
+                  </p>
                 </div>
               </div>
-              
+
               <div className="mt-3">
-                <label className="block text-gray-700 font-medium mb-2" htmlFor="imageUrl">
+                <label
+                  className="block text-gray-700 font-medium mb-2"
+                  htmlFor="imageUrl"
+                >
                   Or Image URL
                 </label>
                 <input
@@ -351,10 +412,13 @@ const ProductForm = () => {
                 />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-gray-700 font-medium mb-2" htmlFor="width">
+                <label
+                  className="block text-gray-700 font-medium mb-2"
+                  htmlFor="width"
+                >
                   Width
                 </label>
                 <input
@@ -368,9 +432,12 @@ const ProductForm = () => {
                   step="0.1"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-gray-700 font-medium mb-2" htmlFor="height">
+                <label
+                  className="block text-gray-700 font-medium mb-2"
+                  htmlFor="height"
+                >
                   Height
                 </label>
                 <input
@@ -384,9 +451,12 @@ const ProductForm = () => {
                   step="0.1"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-gray-700 font-medium mb-2" htmlFor="depth">
+                <label
+                  className="block text-gray-700 font-medium mb-2"
+                  htmlFor="depth"
+                >
                   Depth
                 </label>
                 <input
@@ -401,9 +471,12 @@ const ProductForm = () => {
                 />
               </div>
             </div>
-            
+
             <div className="mt-2">
-              <label className="block text-gray-700 font-medium mb-2" htmlFor="unit">
+              <label
+                className="block text-gray-700 font-medium mb-2"
+                htmlFor="unit"
+              >
                 Unit
               </label>
               <select
@@ -417,9 +490,12 @@ const ProductForm = () => {
                 <option value="in">Inches (in)</option>
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-gray-700 font-medium mb-2" htmlFor="artist">
+              <label
+                className="block text-gray-700 font-medium mb-2"
+                htmlFor="artist"
+              >
                 Artist
               </label>
               <input
@@ -431,9 +507,12 @@ const ProductForm = () => {
                 className="border border-gray-300 rounded w-full py-2 px-3"
               />
             </div>
-            
+
             <div>
-              <label className="block text-gray-700 font-medium mb-2" htmlFor="creationYear">
+              <label
+                className="block text-gray-700 font-medium mb-2"
+                htmlFor="creationYear"
+              >
                 Creation Year
               </label>
               <input
@@ -449,11 +528,11 @@ const ProductForm = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-8 flex justify-end space-x-3">
           <button
             type="button"
-            onClick={() => navigate('/admin/products')}
+            onClick={() => navigate("/admin/products")}
             className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
           >
             Cancel
@@ -463,7 +542,11 @@ const ProductForm = () => {
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
             disabled={loading}
           >
-            {loading ? 'Saving...' : isEditMode ? 'Update Product' : 'Create Product'}
+            {loading
+              ? "Saving..."
+              : isEditMode
+              ? "Update Product"
+              : "Create Product"}
           </button>
         </div>
       </form>

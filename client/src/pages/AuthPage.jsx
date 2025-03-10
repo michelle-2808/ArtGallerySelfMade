@@ -188,7 +188,7 @@ const AuthPage = () => {
   }, [routeToken]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4 auth-page-container">
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-6">
         <div className="space-y-6">
           <div>

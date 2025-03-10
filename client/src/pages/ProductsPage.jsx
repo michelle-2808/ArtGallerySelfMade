@@ -1,5 +1,23 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
+import { FaSearch } from "react-icons/fa";
+
+const CATEGORIES = [
+  "All Categories",
+  "Painting",
+  "Sculpture",
+  "Photography",
+  "Digital Art",
+  "Prints",
+  "Mixed Media",
+  "Other",
+];
+
+const SORT_OPTIONS = [
+  { value: "price_asc", label: "Price (Low to High)" },
+  { value: "price_desc", label: "Price (High to Low)" },
+];
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -8,49 +26,53 @@ const ProductsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filter, setFilter] = useState({
-    category: "all",
-    priceRange: [0, 10000],
+    category: "All Categories",
     sort: "price_asc",
+    search: "",
   });
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-
-        // Prepare query parameters
-        const params = {
-          page: currentPage,
-          limit: 12,
-        };
-
-        if (filter.category !== "all") {
-          params.category = filter.category;
-        }
-
-        // Add price range filter
-        params.minPrice = filter.priceRange[0];
-        params.maxPrice = filter.priceRange[1];
-
-        // Add sorting
-        const [sortField, sortDirection] = filter.sort.split("_");
-        params.sortBy = sortField;
-        params.sortOrder = sortDirection;
-
-        const response = await axios.get("/api/products", { params });
-
-        setProducts(response.data.products || []);
-        setTotalPages(response.data.totalPages || 1);
-      } catch (err) {
-        console.error("Error fetching products:", err);
-        setError("Failed to load products. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProducts();
   }, [currentPage, filter]);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+
+      // Prepare query parameters
+      const params = {
+        page: currentPage,
+        limit: 12,
+      };
+
+      if (filter.category !== "All Categories") {
+        params.category = filter.category;
+      }
+
+      if (filter.search && filter.search.trim() !== "") {
+        params.search = filter.search.trim();
+      }
+
+      // Add sorting - ensure proper price sorting
+      if (filter.sort === "price_asc") {
+        params.sortBy = "price-asc";
+      } else if (filter.sort === "price_desc") {
+        params.sortBy = "price-desc";
+      } else {
+        params.sortBy = filter.sort;
+      }
+
+      const response = await axios.get("/api/products", { params });
+
+      setProducts(response.data.products || []);
+      setTotalPages(response.data.pagination?.totalPages || 1);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setError("Failed to load products. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -61,75 +83,98 @@ const ProductsPage = () => {
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <p>{error}</p>
-        </div>
-      </div>
-    );
-  }
+  // Search is now triggered automatically when input changes
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 font-playfair">Art Collection</h1>
+      <h1 className="text-3xl font-bold mb-8">Art Collection</h1>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-8">
-        <div className="flex flex-wrap gap-4">
-          <div className="w-full md:w-auto">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div className="flex flex-wrap items-center gap-4">
+          <div>
+            <label
+              htmlFor="category"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Category
             </label>
             <select
+              id="category"
               name="category"
               value={filter.category}
               onChange={handleFilterChange}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+              className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
-              <option value="all">All Categories</option>
-              <option value="Painting">Painting</option>
-              <option value="Sculpture">Sculpture</option>
-              <option value="Photography">Photography</option>
-              <option value="Digital Art">Digital Art</option>
-              <option value="Prints">Prints</option>
-              <option value="Mixed Media">Mixed Media</option>
+              {CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
             </select>
           </div>
 
-          <div className="w-full md:w-auto">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div>
+            <label
+              htmlFor="sort"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Sort By
             </label>
             <select
+              id="sort"
               name="sort"
               value={filter.sort}
               onChange={handleFilterChange}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+              className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
-              <option value="creationYear_desc">Newest First</option>
-              <option value="creationYear_asc">Oldest First</option>
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>
+
+        <div className="relative">
+          <input
+            type="text"
+            name="search"
+            value={filter.search}
+            onChange={(e) => {
+              handleFilterChange(e);
+              // Trigger search immediately on input change
+              setTimeout(() => fetchProducts(), 300);
+            }}
+            placeholder="Search art..."
+            className="border border-gray-300 rounded-md py-2 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <span className="absolute right-0 top-0 mt-3 mr-3 text-gray-400">
+            <FaSearch />
+          </span>
+        </div>
       </div>
 
+      {/* Loading and Error States */}
+      {loading && (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading artworks...</p>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6">
+          {error}
+        </div>
+      )}
+
       {/* Products Grid */}
-      {products.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500">
-            No products found matching your criteria.
+      {!loading && !error && products.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-lg text-gray-500">
+            No artworks found matching your criteria.
           </p>
         </div>
       ) : (
@@ -139,13 +184,22 @@ const ProductsPage = () => {
               key={product._id}
               className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
             >
-              <img
-                src={product.imageUrl}
-                alt={product.title}
-                className="w-full h-48 object-cover"
-              />
+              <Link to={`/product/${product._id}`}>
+                <img
+                  src={product.imageUrl}
+                  alt={product.title}
+                  className="w-full h-48 object-cover"
+                />
+              </Link>
               <div className="p-4">
-                <h2 className="text-lg font-semibold mb-1">{product.title}</h2>
+                <Link
+                  to={`/product/${product._id}`}
+                  className="hover:text-green-600"
+                >
+                  <h2 className="text-lg font-semibold mb-1">
+                    {product.title}
+                  </h2>
+                </Link>
                 <p className="text-gray-600 text-sm mb-2">{product.artist}</p>
                 <p className="text-green-600 font-bold">
                   ${product.price.toFixed(2)}
@@ -154,12 +208,12 @@ const ProductsPage = () => {
                   <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
                     {product.category}
                   </span>
-                  <a
-                    href={`/product/${product._id}`}
-                    className="text-green-600 hover:text-green-800"
+                  <Link
+                    to={`/product/${product._id}`}
+                    className="text-green-600 hover:text-green-800 text-sm font-medium"
                   >
                     View Details
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -168,7 +222,7 @@ const ProductsPage = () => {
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {!loading && !error && totalPages > 1 && (
         <div className="flex justify-center mt-8">
           <nav className="flex items-center">
             <button
