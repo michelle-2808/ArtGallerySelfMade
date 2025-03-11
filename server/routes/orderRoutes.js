@@ -13,7 +13,7 @@ router.use(authMiddleware);
 // Get all orders for the current user
 router.get("/", async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     
     const orders = await Order.find({ userId })
       .sort({ createdAt: -1 });
@@ -28,7 +28,7 @@ router.get("/", async (req, res) => {
 router.get("/:orderId", async (req, res) => {
   try {
     const { orderId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user.id;
     
     const order = await Order.findOne({ _id: orderId, userId });
     
@@ -46,7 +46,7 @@ router.get("/:orderId", async (req, res) => {
 router.get("/:orderId/items", async (req, res) => {
   try {
     const { orderId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user.id;
     
     // Verify the order belongs to the user
     const order = await Order.findOne({ _id: orderId, userId });
@@ -74,7 +74,7 @@ router.get("/:orderId/items", async (req, res) => {
 // Request OTP for order placement
 router.post("/request-otp", async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.id;
     
     // Check if user has items in cart
     const cartItems = await CartItem.find({ userId });
@@ -117,7 +117,7 @@ router.post("/request-otp", async (req, res) => {
 router.post("/place-order", async (req, res) => {
   try {
     const { otp, shippingInfo } = req.body;
-    const userId = req.user._id;
+    const userId = req.user.id;
     
     // Validate OTP
     const otpRecord = await OtpCode.findOne({

@@ -16,23 +16,21 @@ const ProductDetail = () => {
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
+    // Redirect to login if user is not authenticated
+    if (!user && !loading) {
+      navigate("/auth", { state: { from: `/product/${productId}` } });
+      return;
+    }
+
     const fetchProduct = async () => {
       try {
         setLoading(true);
         const response = await axios.get(`/api/products/${productId}`);
         setProduct(response.data);
 
-        // Record view
-        if (!user?.isAdmin) {
-          await axios.post(
-            `/api/admin/analytics/record-view/${productId}`,
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            }
-          );
+        // Record view separately after setting product data
+        if (user && !user.isAdmin) {
+          recordProductView(productId);
         }
       } catch (err) {
         console.error("Error fetching product:", err);
@@ -42,8 +40,28 @@ const ProductDetail = () => {
       }
     };
 
-    fetchProduct();
-  }, [productId, user]);
+    if (user) {
+      fetchProduct();
+    }
+  }, [productId, user, navigate]);
+
+  // Separate function to record product view - doesn't block UI
+  const recordProductView = async (id) => {
+    try {
+      await axios.post(
+        `/api/products/record-view/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+    } catch (error) {
+      // Silent fail - don't block user experience for analytics errors
+      console.error("Error recording product view:", error);
+    }
+  };
 
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value);
@@ -52,16 +70,42 @@ const ProductDetail = () => {
 
   const addToCart = async () => {
     if (!user) {
-      navigate("/auth");
+      navigate("/auth", { state: { from: `/product/${productId}` } });
+      return;
+    }
+
+    if (user.isAdmin) {
+      setMessage({
+        type: "error",
+        text: "Admin users cannot add items to cart",
+      });
+      setTimeout(() => setMessage(null), 3000);
       return;
     }
 
     try {
       setAddingToCart(true);
-      const response = await axios.post("/api/cart/add", {
-        productId,
-        quantity,
-      });
+
+      // Get token from localStorage
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+
+      const response = await axios.post(
+        "/api/cart/add",
+        {
+          productId,
+          quantity,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       setMessage({
         type: "success",
@@ -82,8 +126,8 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12 flex justify-center">
-        <div className="spinner">Loading...</div>
+      <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -210,7 +254,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Add to cart section */}
-            {!isOutOfStock && (
+            {!isOutOfStock && user && !user.isAdmin && (
               <div className="mb-6">
                 <div className="flex items-center mb-4">
                   <label htmlFor="quantity" className="mr-4 text-gray-700">
@@ -231,6 +275,7 @@ const ProductDetail = () => {
                   onClick={addToCart}
                   disabled={addingToCart || isOutOfStock}
                   className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded transition duration-300 disabled:bg-gray-400"
+                  style={{ backgroundColor: "#4a6741" }}
                 >
                   {addingToCart ? "Adding..." : "Add to Cart"}
                 </button>

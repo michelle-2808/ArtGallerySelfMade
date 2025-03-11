@@ -3,7 +3,9 @@ import { createContext, useState, useEffect } from "react";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  // Initialize user as undefined to indicate "not yet determined"
+  // This way, components can differentiate between "no user" (null) and "still loading" (undefined)
+  const [user, setUser] = useState(undefined);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
 
@@ -15,7 +17,10 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         console.error("Error parsing user from localStorage:", error);
         localStorage.removeItem("user");
+        setUser(null); // Explicitly set to null if there's an error
       }
+    } else {
+      setUser(null); // Explicitly set to null if no stored user
     }
     setLoading(false);
   }, []);

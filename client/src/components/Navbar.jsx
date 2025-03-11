@@ -11,6 +11,7 @@ import {
   Phone,
 } from "lucide-react";
 import AuthContext from "../hooks/AuthContext";
+import axios from "axios"; // Added axios import
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -18,6 +19,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [cartCount, setCartCount] = useState(0); // Added cartCount state
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +28,26 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const response = await axios.get("/api/cart/count", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setCartCount(response.data.count);
+      } catch (error) {
+        console.error("Error fetching cart count:", error);
+      }
+    };
+
+    if (user) {
+      // Only fetch cart count if user is logged in
+      fetchCartCount();
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -186,7 +208,7 @@ const Navbar = () => {
               >
                 <ShoppingCart className="w-6 h-6" />
                 <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-green-600 rounded-full">
-                  0
+                  {cartCount} {/* Display cart count */}
                 </span>
               </NavLink>
             )}
