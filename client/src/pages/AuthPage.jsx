@@ -1,10 +1,11 @@
 import { useState, useContext, useEffect } from "react";
 import AuthContext from "../hooks/AuthContext";
-import { useNavigate, Link, useParams } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 
 const AuthPage = () => {
   const { login, register } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
 
@@ -29,7 +30,7 @@ const AuthPage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [resetToken, setResetToken] = useState(null);
-  const { token: routeToken } = useParams();
+  const { token: routeToken } = useParams; // Assuming useParams is imported
 
   const handleLoginChange = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
@@ -55,9 +56,12 @@ const AuthPage = () => {
     setError(null);
     try {
       const response = await login(loginData.email, loginData.password);
-      // Redirect admin users to admin dashboard, others to regular dashboard
+      // Redirect admin users to admin dashboard, others to regular dashboard or previous location
+      const from = location.state?.from;
       if (response.user && response.user.isAdmin) {
         navigate("/admin/dashboard");
+      } else if (from) {
+        navigate(from);
       } else {
         navigate("/dashboard");
       }

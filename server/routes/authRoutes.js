@@ -189,8 +189,53 @@ router.post("/logout", (req, res) => {
 });
 
 // 5. Profile (GET /api/auth/profile)
-router.get("/profile", authMiddleware, (req, res) => {
-  res.status(200).json({ message: "Profile accessed", user: req.user });
+router.get("/profile", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "Profile accessed", user });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching user profile", error: error.message });
+  }
+});
+
+// Validate token
+router.get("/validate-token", authMiddleware, (req, res) => {
+  res.status(200).json({ valid: true, user: req.user });
+});
+
+// Update user profile
+router.post("/update-profile", authMiddleware, async (req, res) => {
+  try {
+    const { name, phone, address } = req.body;
+
+    // Find and update the user
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        username: name,
+        phone,
+        address,
+      },
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "Profile updated successfully", user });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res
+      .status(500)
+      .json({ message: "Error updating profile", error: error.message });
+  }
 });
 
 // 6. Request Password Reset (POST /api/auth/forgot-password)

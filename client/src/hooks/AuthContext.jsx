@@ -10,19 +10,44 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Error parsing user from localStorage:", error);
+    const validateAuth = async () => {
+      const storedUser = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+
+      if (storedUser && token) {
+        try {
+          // Validate the token by making a request to the server
+          const response = await fetch("/api/auth/validate-token", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            setUser(JSON.parse(storedUser));
+          } else {
+            console.warn("Token validation failed, logging out user");
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            setUser(null);
+          }
+        } catch (error) {
+          console.error("Error validating authentication:", error);
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          setUser(null);
+        }
+      } else if (storedUser && !token) {
+        console.warn("User data found but token missing, logging out");
         localStorage.removeItem("user");
-        setUser(null); // Explicitly set to null if there's an error
+        setUser(null);
+      } else {
+        setUser(null);
       }
-    } else {
-      setUser(null); // Explicitly set to null if no stored user
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    validateAuth();
   }, []);
 
   // Add axios interceptor to add token to all requests
@@ -125,6 +150,7 @@ export const AuthProvider = ({ children }) => {
       });
       // Remove token from localStorage on logout
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
       setUser(null);
     } catch (error) {
       console.error("Logout error:", error);

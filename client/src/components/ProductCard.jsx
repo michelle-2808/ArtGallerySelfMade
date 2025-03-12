@@ -1,10 +1,11 @@
 import React, { useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../hooks/AuthContext";
 
 const ProductCard = ({ product }) => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [addingToCart, setAddingToCart] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -26,12 +27,20 @@ const ProductCard = ({ product }) => {
   const stockStatus = getStockStatus();
 
   // Record a product view when card is clicked
-  const recordProductView = async () => {
-    if (user && user.isAdmin) return; // Don't record admin views
+  const recordProductView = async (e) => {
+    // If user is not logged in, redirect to auth page
+    if (!user) {
+      e.preventDefault();
+      navigate("/auth", { state: { from: `/product/${product._id}` } });
+      return;
+    }
+
+    // Don't record admin views
+    if (user.isAdmin) return;
 
     try {
       await axios.post(
-        `/api/admin/analytics/record-view/${product._id}`,
+        `/api/products/record-view/${product._id}`,
         {},
         {
           headers: {
@@ -78,6 +87,9 @@ const ProductCard = ({ product }) => {
 
       setMessage("Added to cart!");
       setTimeout(() => setMessage(null), 3000);
+
+      // Dispatch custom event to notify Navbar about cart update
+      window.dispatchEvent(new CustomEvent("cart-updated"));
     } catch (err) {
       console.error("Error adding to cart:", err);
       setMessage("Failed to add to cart");

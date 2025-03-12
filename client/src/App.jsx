@@ -14,6 +14,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import ProductsPage from "./pages/ProductsPage";
+import Profile from "./pages/Profile"; // Added import for Profile page
 
 // Lazy load admin components
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -39,6 +40,14 @@ const AppLayout = () => {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

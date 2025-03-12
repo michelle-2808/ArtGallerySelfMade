@@ -11,15 +11,15 @@ import {
   Phone,
 } from "lucide-react";
 import AuthContext from "../hooks/AuthContext";
-import axios from "axios"; // Added axios import
+import axios from "axios";
 
 const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const { user, logout } = useContext(AuthContext);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const [cartCount, setCartCount] = useState(0); // Added cartCount state
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,22 +31,33 @@ const Navbar = () => {
 
   useEffect(() => {
     const fetchCartCount = async () => {
-      try {
-        const response = await axios.get("/api/cart/count", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        setCartCount(response.data.count);
-      } catch (error) {
-        console.error("Error fetching cart count:", error);
+      if (user) {
+        try {
+          const response = await axios.get("/api/cart/count", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+          setCartCount(response.data.count);
+        } catch (error) {
+          console.error("Error fetching cart count:", error);
+          setCartCount(0);
+        }
+      } else {
+        setCartCount(0);
       }
     };
 
-    if (user) {
-      // Only fetch cart count if user is logged in
+    fetchCartCount();
+
+    const handleCartUpdate = () => {
       fetchCartCount();
-    }
+    };
+
+    window.addEventListener("cart-updated", handleCartUpdate);
+    return () => {
+      window.removeEventListener("cart-updated", handleCartUpdate);
+    };
   }, [user]);
 
   const handleLogout = async () => {
@@ -113,7 +124,7 @@ const Navbar = () => {
 
   const NavLinks = ({ isMobile }) => {
     const closeMobileMenu = () => {
-      setIsMobileMenuOpen(false);
+      setIsOpen(false);
     };
 
     const linkClasses = isMobile
@@ -179,7 +190,6 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
-          {/* Logo and Brand */}
           <div className="flex items-center">
             <NavLink to="/" className="flex items-center group">
               <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-600 to-green-400 flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:shadow-green-200/50 transition-all duration-300 group-hover:scale-105">
@@ -191,31 +201,43 @@ const Navbar = () => {
             </NavLink>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:block">
             <ul className="flex items-center space-x-1">
               <NavLinks />
             </ul>
           </div>
 
-          {/* Cart and Mobile Menu Button */}
           <div className="flex items-center space-x-4">
             {user && (
-              <NavLink
-                to="/cart"
-                className="relative p-2 text-gray-700 hover:text-green-600 transition-colors"
-                aria-label="Shopping Cart"
-              >
-                <ShoppingCart className="w-6 h-6" />
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-green-600 rounded-full">
-                  {cartCount} {/* Display cart count */}
-                </span>
-              </NavLink>
+              <>
+                <NavLink
+                  to="/cart"
+                  className="relative p-2 text-gray-700 hover:text-green-600 transition-colors"
+                  aria-label="Shopping Cart"
+                >
+                  <ShoppingCart className="w-6 h-6" />
+                  {cartCount > 0 && (
+                    <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-green-600 rounded-full">
+                      {cartCount}
+                    </span>
+                  )}
+                </NavLink>
+
+                <NavLink
+                  to="/profile"
+                  className="relative flex items-center justify-center"
+                  aria-label="User Profile"
+                >
+                  <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white hover:bg-green-700 transition-colors">
+                    {user.email.charAt(0).toUpperCase()}
+                  </div>
+                </NavLink>
+              </>
             )}
 
             <button
               className="md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
             >
               <Menu className="w-6 h-6" />
@@ -224,8 +246,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
-      {isMobileMenuOpen && (
+      {isOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
           <ul className="flex flex-col py-2">
             <NavLinks isMobile={true} />

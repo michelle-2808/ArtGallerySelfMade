@@ -5,7 +5,7 @@ import axios from "axios";
 
 const ProductDetail = () => {
   const { productId } = useParams();
-  const { user } = useContext(AuthContext);
+  const { user, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
@@ -16,8 +16,11 @@ const ProductDetail = () => {
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
+    // If the auth state is still loading, wait
+    if (authLoading) return;
+
     // Redirect to login if user is not authenticated
-    if (!user && !loading) {
+    if (!user) {
       navigate("/auth", { state: { from: `/product/${productId}` } });
       return;
     }
@@ -29,7 +32,7 @@ const ProductDetail = () => {
         setProduct(response.data);
 
         // Record view separately after setting product data
-        if (user && !user.isAdmin) {
+        if (!user.isAdmin) {
           recordProductView(productId);
         }
       } catch (err) {
@@ -40,20 +43,23 @@ const ProductDetail = () => {
       }
     };
 
-    if (user) {
-      fetchProduct();
-    }
-  }, [productId, user, navigate]);
+    // Only fetch if user is authenticated
+    fetchProduct();
+  }, [productId, user, navigate, authLoading]);
 
   // Separate function to record product view - doesn't block UI
   const recordProductView = async (id) => {
+    // Only proceed if we have a token
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
       await axios.post(
         `/api/products/record-view/${id}`,
         {},
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -113,6 +119,9 @@ const ProductDetail = () => {
       });
 
       setTimeout(() => setMessage(null), 3000);
+
+      // Dispatch custom event to notify Navbar about cart update
+      window.dispatchEvent(new CustomEvent("cart-updated"));
     } catch (err) {
       console.error("Error adding to cart:", err);
       setMessage({

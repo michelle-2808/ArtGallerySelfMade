@@ -5,10 +5,13 @@ import crypto from "crypto"; // Import Node.js's built-in crypto module
 
 const userSchema = new mongoose.Schema(
   {
-    username: { type: String, required: true, unique: true },
+    username: { type: String, unique: true, sparse: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     isAdmin: { type: Boolean, default: false },
+    verified: { type: Boolean, default: false },
+    phone: { type: String, default: "" },
+    address: { type: String, default: "" },
     resetPasswordToken: { type: String }, // Token for password reset
     resetPasswordExpires: { type: Date }, // Expiration time for the token
   },

@@ -68,9 +68,7 @@ const Cart = () => {
       setUpdating(true);
       await axios.put(
         `/api/cart/${itemId}`,
-        {
-          quantity: newQuantity,
-        },
+        { quantity: newQuantity },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -78,16 +76,18 @@ const Cart = () => {
         }
       );
 
-      // Update local state
+      // Update locally to avoid refetching
       const updatedItems = cartItems.map((item) =>
         item._id === itemId ? { ...item, quantity: newQuantity } : item
       );
-
       setCartItems(updatedItems);
       calculateTotal(updatedItems);
+
+      // Dispatch event to update cart count in navbar
+      window.dispatchEvent(new CustomEvent("cart-updated"));
     } catch (err) {
       console.error("Error updating quantity:", err);
-      setError("Failed to update quantity");
+      setError("Failed to update item quantity");
     } finally {
       setUpdating(false);
     }
@@ -102,10 +102,13 @@ const Cart = () => {
         },
       });
 
-      // Update local state
+      // Update locally
       const updatedItems = cartItems.filter((item) => item._id !== itemId);
       setCartItems(updatedItems);
       calculateTotal(updatedItems);
+
+      // Dispatch event to update cart count in navbar
+      window.dispatchEvent(new CustomEvent("cart-updated"));
     } catch (err) {
       console.error("Error removing item:", err);
       setError("Failed to remove item from cart");
@@ -127,8 +130,12 @@ const Cart = () => {
         },
       });
 
+      // Clear local state
       setCartItems([]);
       setTotalAmount(0);
+
+      // Dispatch event to update cart count in navbar
+      window.dispatchEvent(new CustomEvent("cart-updated"));
     } catch (err) {
       console.error("Error clearing cart:", err);
       setError("Failed to clear cart");
