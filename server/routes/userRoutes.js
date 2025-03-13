@@ -1,8 +1,9 @@
-const express = require("express");
+
+import express from "express";
+import { Order } from "../models/index.js";
+import { authMiddleware as isAuth } from "../middleware/authMiddleware.js";
+
 const router = express.Router();
-const Order = require("../models/Order");
-const User = require("../models/User");
-const { isAuth } = require("../middleware/authMiddleware");
 
 // Get user dashboard stats
 router.get("/dashboard-stats", isAuth, async (req, res) => {
@@ -87,4 +88,4 @@ router.get("/dashboard-stats", isAuth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
