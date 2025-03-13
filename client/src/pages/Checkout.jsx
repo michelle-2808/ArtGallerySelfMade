@@ -36,7 +36,11 @@ const Checkout = () => {
   const fetchCartItems = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/cart');
+      const response = await axios.get('/api/cart', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       
       if (response.data.length === 0) {
         navigate('/cart');
