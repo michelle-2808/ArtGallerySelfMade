@@ -133,13 +133,13 @@ html, body {
 
 /* Add padding top to account for navbar height */
 .container {
-  padding-top: 4rem; /* 64px, adjust based on your navbar height */
+  padding-top: 1rem; /* 64px, adjust based on your navbar height */
 }
 
 /* For mobile devices */
 @media (max-width: 768px) {
   .container {
-    padding-top: 3.5rem; /* 56px */
+    padding-top: 2rem; /* 56px */
   }
 }
 

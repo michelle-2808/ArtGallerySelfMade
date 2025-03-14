@@ -192,11 +192,11 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <NavLink to="/" className="flex items-center group">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-600 to-green-400 flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:shadow-green-200/50 transition-all duration-300 group-hover:scale-105">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r font-playfair from-green-600 to-green-400 flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:shadow-green-200/50 transition-all duration-300 group-hover:scale-105">
                 AG
               </div>
               <span className="ml-3 text-xl font-bold text-gray-800 tracking-tight">
-                <span className="text-green-600">Amruta's</span> Art Gallery
+                <span className="text-green-600 font-playfair">Amruta's</span> <span className="font-playfair">Art Gallery</span>
               </span>
             </NavLink>
           </div>

@@ -3,7 +3,7 @@ import React from "react";
 const About = () => {
   return (
     <div className="bg-gray-50 min-h-screen pt-20">
-      <div className="container mx-auto px-4 py-12">
+      <div className="mx-auto px-16 py-16">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-8 font-playfair text-center">
             About <span className="text-green-600">Amruta's</span> Art Gallery
@@ -13,7 +13,7 @@ const About = () => {
             <div className="flex flex-col md:flex-row gap-8 items-center">
               <div className="w-full md:w-1/2">
                 <img
-                  src="https://images.unsplash.com/photo-1594642461601-70e7ddd18bc3?q=80&w=2070&auto=format&fit=crop"
+                  src="https://images.unsplash.com/photo-1514195037031-83d60ed3b448?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGFydCUyMGdhbGxlcnl8ZW58MHx8MHx8fDA%3D"
                   alt="Art Gallery Interior"
                   className="rounded-lg shadow-md w-full h-auto object-cover"
                 />

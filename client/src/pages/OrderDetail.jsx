@@ -106,7 +106,7 @@ const OrderDetail = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12">
+      <div className="mx-auto px-16 py-16">
         <div className="text-center">Loading...</div>
       </div>
     );
@@ -114,7 +114,7 @@ const OrderDetail = () => {
 
   if (error || !order) {
     return (
-      <div className="container mx-auto px-4 py-12">
+      <div className="mx-auto px-16 py-16">
         <div className="bg-red-100 text-red-700 p-4 rounded">
           {error || "Order not found"}
         </div>
@@ -128,7 +128,7 @@ const OrderDetail = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-16">
+    <div className="mx-auto px-16 py-16">
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">
           Order Details: {order.orderNumber}

@@ -87,16 +87,16 @@ const ProductsPage = () => {
   // Search is now triggered automatically when input changes
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className=" mx-auto px-16 py-16">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Art Collection</h1>
+        <h1 className="text-3xl font-bold font-playfair">Art Collection</h1>
         
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-        <div className="flex flex-wrap items-center gap-4">
-          <div>
+        <div className="flex flex-wrap items-center gap-4 rounded-xl">
+          <div >
             <label
               htmlFor="category"
               className="block text-sm font-medium text-gray-700 mb-1"

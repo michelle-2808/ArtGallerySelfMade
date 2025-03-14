@@ -78,30 +78,30 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto px-16 py-16">
       <h1 className="text-3xl font-bold mb-8 font-playfair">My Dashboard</h1>
 
       {/* User Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-2">Total Orders</h2>
           <p className="text-3xl font-bold text-green-600">
             {userStats?.totalOrders || 0}
           </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-2">Total Spent</h2>
           <p className="text-3xl font-bold text-green-600">
             ${userStats?.totalSpent?.toFixed(2) || "0.00"}
           </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-2">Avg. Order Value</h2>
           <p className="text-3xl font-bold text-green-600">
             ${userStats?.averageOrderValue?.toFixed(2) || "0.00"}
           </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-2">Total Items</h2>
           <p className="text-3xl font-bold text-green-600">
             {userStats?.totalItems || 0}
@@ -110,7 +110,7 @@ const Dashboard = () => {
       </div>
 
       {/* Recent Orders */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+      <div className="bg-white p-6 rounded-xl shadow-md mb-8">
         <h2 className="text-xl font-semibold mb-4">Recent Orders</h2>
         {userOrders.length > 0 ? (
           <div className="overflow-x-auto">
@@ -188,7 +188,7 @@ const Dashboard = () => {
       </div>
 
       {/* Customer Insights */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white p-6 rounded-xl shadow-md">
         <h3 className="text-lg font-medium mb-4">Your Shopping Insights</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">

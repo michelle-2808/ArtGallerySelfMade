@@ -109,8 +109,8 @@ const Profile = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-16 mt-8">
-      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+    <div className=" mx-auto px-16 py-16 mt-8">
+      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
         <div className="p-8">
           <h1 className="text-3xl font-bold mb-6 text-gray-800 font-playfair">
             My Profile
@@ -199,14 +199,14 @@ const Profile = () => {
                   <button
                     type="button"
                     onClick={() => setIsEditing(true)}
-                    className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                    className="px-6 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
                   >
                     Edit Profile
                   </button>
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="px-6 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                    className="px-6 py-2 bg-white text-gray-700 border rounded-xl border-gray-300 rounded-md hover:bg-gray-50"
                   >
                     Logout
                   </button>

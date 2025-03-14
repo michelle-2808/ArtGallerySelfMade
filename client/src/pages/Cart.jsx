@@ -146,7 +146,7 @@ const Cart = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12 flex justify-center">
+      <div className="mx-auto px-16 py-16 flex justify-center">
         <div className="spinner">Loading...</div>
       </div>
     );
@@ -154,7 +154,7 @@ const Cart = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-12">
+      <div className="mx-auto px-16 py-16">
         <div className="bg-red-100 text-red-700 p-4 rounded mb-4">{error}</div>
         <button
           onClick={() => fetchCartItems()}
@@ -167,20 +167,20 @@ const Cart = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto px-16 py-16">
       <h1 className="text-3xl font-bold mb-6 font-playfair">
         Your Shopping Cart
       </h1>
 
       {cartItems.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className="bg-white rounded-xl shadow-md p-6 text-center">
           <h2 className="text-xl font-medium mb-4">Your cart is empty</h2>
           <p className="text-gray-600 mb-6">
             Looks like you haven't added any items to your cart yet.
           </p>
           <Link
             to="/products"
-            className="bg-primary text-white py-2 px-6 rounded-lg hover:bg-primary-dark transition duration-300"
+            className="bg-primary text-white py-2 px-6 rounded-xl hover:bg-primary-dark transition duration-300"
           >
             Continue Shopping
           </Link>
@@ -189,7 +189,7 @@ const Cart = () => {
         <div className="flex flex-col md:flex-row gap-6">
           {/* Cart Items */}
           <div className="w-full md:w-2/3">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold">
@@ -286,7 +286,7 @@ const Cart = () => {
 
           {/* Order Summary */}
           <div className="w-full md:w-1/3">
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
 
               <div className="mb-4">
@@ -329,7 +329,7 @@ const Cart = () => {
 
               <Link
                 to="/checkout"
-                className={`mt-6 block text-center bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-dark transition duration-300 ${
+                className={`mt-6 block text-center bg-primary text-white py-3 px-4 rounded-xl hover:bg-primary-dark transition duration-300 ${
                   cartItems.length === 0 ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 style={{ backgroundColor: "#4a6741" }}

@@ -20,7 +20,7 @@ const HeroSection = () => {
       }}
     >
       <div className="absolute top-0 right-0 bottom-0 w-3/4 md:w-2/3 bg-gradient-to-l from-green-600/50 via-green-500/30 to-transparent"></div>
-      <div className="container mx-auto px-6 relative z-10">
+      <div className=" mx-auto px-16 relative z-10">
         <div className="max-w-3xl ml-auto pr-4 md:pr-8">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 font-playfair leading-tight">
             Amruta's <span className="text-green-300">Art Gallery</span>
