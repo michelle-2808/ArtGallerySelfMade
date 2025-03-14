@@ -41,7 +41,7 @@ const CategoryManagement = () => {
   };
   
   return (
-    <div className="mx-auto px-16 py-16">
+    <div className="mx-auto px-48 py-16">
       <h1 className="text-2xl font-bold mb-6">Category Management</h1>
       
       {loading ? (

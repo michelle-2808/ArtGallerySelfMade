@@ -120,7 +120,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className=" mx-auto px-16 py-16">
+    <div className=" mx-auto px-48 py-16">
       <h1 className="text-3xl font-bold mb-8 font-playfair">Admin Dashboard</h1>
 
       <div className="flex flex-wrap border-b border-gray-200 mb-8">

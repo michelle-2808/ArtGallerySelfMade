@@ -128,7 +128,7 @@ const ProductAnalytics = () => {
     : 0;
 
   return (
-    <div className="mx-auto px-16 py-16">
+    <div className="mx-auto px-48 py-16">
       <div className="mb-8">
         <Link to="/admin/dashboard" className="text-green-600 hover:text-green-800">
           &larr; Back to Dashboard

@@ -135,7 +135,7 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <div className="mx-auto px-16 py-16 flex justify-center items-center min-h-[60vh]">
+      <div className="mx-auto px-48 py-16 flex justify-center items-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
@@ -143,7 +143,7 @@ const ProductDetail = () => {
 
   if (error || !product) {
     return (
-      <div className="mx-auto px-16 py-16">
+      <div className="mx-auto px-48 py-16">
         <div className="bg-red-100 text-red-700 p-4 rounded">
           {error || "Product not found"}
         </div>
@@ -154,7 +154,7 @@ const ProductDetail = () => {
   const isOutOfStock = !product.isAvailable || product.stockQuantity === 0;
 
   return (
-    <div className="mx-auto px-16 py-16">
+    <div className="mx-auto px-48 py-16">
       {message && (
         <div
           className={`mb-4 p-4 rounded ${

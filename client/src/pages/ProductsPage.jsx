@@ -87,7 +87,7 @@ const ProductsPage = () => {
   // Search is now triggered automatically when input changes
 
   return (
-    <div className=" mx-auto px-16 py-16">
+    <div className=" mx-auto px-48 py-16">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold font-playfair">Art Collection</h1>
         

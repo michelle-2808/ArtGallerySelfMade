@@ -78,7 +78,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="mx-auto px-16 py-16">
+    <div className="mx-auto px-48 py-16">
       <h1 className="text-3xl font-bold mb-8 font-playfair">My Dashboard</h1>
 
       {/* User Summary */}

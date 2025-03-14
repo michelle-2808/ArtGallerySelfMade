@@ -54,7 +54,7 @@ const Contact = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen pt-20">
-      <div className="mx-auto px-16 py-16">
+      <div className="mx-auto px-48 py-16">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold mb-2 font-playfair text-center">
             Contact <span className="text-green-600">Amruta's</span> Art Gallery

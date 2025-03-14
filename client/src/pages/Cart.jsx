@@ -146,7 +146,7 @@ const Cart = () => {
 
   if (loading) {
     return (
-      <div className="mx-auto px-16 py-16 flex justify-center">
+      <div className="mx-auto px-48 py-16 flex justify-center">
         <div className="spinner">Loading...</div>
       </div>
     );
@@ -154,7 +154,7 @@ const Cart = () => {
 
   if (error) {
     return (
-      <div className="mx-auto px-16 py-16">
+      <div className="mx-auto px-48 py-16">
         <div className="bg-red-100 text-red-700 p-4 rounded mb-4">{error}</div>
         <button
           onClick={() => fetchCartItems()}
@@ -167,7 +167,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="mx-auto px-16 py-16">
+    <div className="mx-auto px-48 py-16">
       <h1 className="text-3xl font-bold mb-6 font-playfair">
         Your Shopping Cart
       </h1>

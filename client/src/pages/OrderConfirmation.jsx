@@ -35,7 +35,7 @@ const OrderConfirmation = () => {
   
   if (loading) {
     return (
-      <div className="mx-auto px-16 py-16 flex justify-center">
+      <div className="mx-auto px-48 py-16 flex justify-center">
         <div className="spinner">Loading order details...</div>
       </div>
     );
@@ -43,7 +43,7 @@ const OrderConfirmation = () => {
   
   if (error || !order) {
     return (
-      <div className="mx-auto px-16 py-16">
+      <div className="mx-auto px-48 py-16">
         <div className="bg-red-100 text-red-700 p-4 rounded">
           {error || "Order not found"}
         </div>
@@ -55,7 +55,7 @@ const OrderConfirmation = () => {
   }
   
   return (
-    <div className="mx-auto px-16 py-16">
+    <div className="mx-auto px-48 py-16">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
           <div className="bg-green-100 text-green-700 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">

@@ -109,7 +109,7 @@ const Profile = () => {
   }
 
   return (
-    <div className=" mx-auto px-16 py-16 mt-8">
+    <div className=" mx-auto px-48 py-16 mt-8">
       <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
         <div className="p-8">
           <h1 className="text-3xl font-bold mb-6 text-gray-800 font-playfair">

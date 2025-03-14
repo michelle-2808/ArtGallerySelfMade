@@ -92,7 +92,7 @@ const ProductManagement = () => {
   };
 
   return (
-    <div className="mx-auto px-16 py-16">
+    <div className="mx-auto px-48 py-16">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Product Management</h1>
         <Link

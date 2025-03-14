@@ -126,14 +126,14 @@ const Checkout = () => {
   
   if (loading) {
     return (
-      <div className="mx-auto px-16 py-16 flex justify-center">
+      <div className="mx-auto px-48 py-16 flex justify-center">
         <div className="spinner">Loading checkout...</div>
       </div>
     );
   }
   
   return (
-    <div className="mx-auto px-16 py-16">
+    <div className="mx-auto px-48 py-16">
       <h1 className="text-2xl font-bold mb-6">Checkout</h1>
       
       {error && (
