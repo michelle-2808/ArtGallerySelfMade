@@ -99,7 +99,7 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full relative">
+    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full relative">
       {message && (
         <div className="absolute top-2 left-2 right-2 z-10 bg-green-100 text-green-700 p-2 rounded text-sm text-center">
           {message}

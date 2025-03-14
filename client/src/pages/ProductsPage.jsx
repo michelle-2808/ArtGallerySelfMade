@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { FaSearch } from "react-icons/fa";
+import ProductCard from "../components/ProductCard";
 
 const CATEGORIES = [
   "All Categories",
@@ -87,7 +88,10 @@ const ProductsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Art Collection</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Art Collection</h1>
+        
+      </div>
 
       {/* Filters */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
@@ -180,43 +184,7 @@ const ProductsPage = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((product) => (
-            <div
-              key={product._id}
-              className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
-            >
-              <Link to={`/product/${product._id}`}>
-                <img
-                  src={product.imageUrl}
-                  alt={product.title}
-                  className="w-full h-48 object-cover"
-                />
-              </Link>
-              <div className="p-4">
-                <Link
-                  to={`/product/${product._id}`}
-                  className="hover:text-green-600"
-                >
-                  <h2 className="text-lg font-semibold mb-1">
-                    {product.title}
-                  </h2>
-                </Link>
-                <p className="text-gray-600 text-sm mb-2">{product.artist}</p>
-                <p className="text-green-600 font-bold">
-                  ${product.price.toFixed(2)}
-                </p>
-                <div className="flex justify-between items-center mt-4">
-                  <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-                    {product.category}
-                  </span>
-                  <Link
-                    to={`/product/${product._id}`}
-                    className="text-green-600 hover:text-green-800 text-sm font-medium"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
       )}

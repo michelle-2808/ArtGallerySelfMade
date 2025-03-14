@@ -242,7 +242,7 @@ const Checkout = () => {
                   type="button"
                   onClick={requestOtp}
                   disabled={processing}
-                  className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded transition duration-300 disabled:bg-gray-400"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded transition duration-300 disabled:bg-gray-400"
                 >
                   {processing ? 'Processing...' : 'Continue to Payment'}
                 </button>
