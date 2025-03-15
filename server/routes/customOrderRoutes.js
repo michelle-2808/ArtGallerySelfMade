@@ -165,24 +165,47 @@ router.get("/:orderId", isAuth, async (req, res) => {
   }
 });
 
-// Admin routes
-router.get("/all", isAuth, isAdmin, async (req, res) => {
+// Admin routes - moved to top to prevent conflict with :orderId route
+router.get("/admin/list", isAuth, isAdmin, async (req, res) => {
   try {
     const orders = await CustomOrder.find()
       .populate("userId", "name email")
       .sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
+    console.error("Error fetching orders:", error);
     res
       .status(500)
       .json({ message: "Error fetching orders", error: error.message });
   }
 });
 
-router.patch("/:orderId/status", isAuth, isAdmin, async (req, res) => {
+// Admin route to get the custom orders in CustomOrderDetail page.
+router.get("/admin/:orderId", isAuth, isAdmin, async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { status, adminNotes, approvedPrice } = req.body;
+    const order = await CustomOrder.findById(orderId).populate(
+      "userId",
+      "name email"
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: "Custom order not found" });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching custom order", error: error.message });
+  }
+});
+
+
+router.patch("/admin/:orderId/status", isAuth, isAdmin, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status, adminNotes, approvedPrice, validationNotes } = req.body;
 
     const order = await CustomOrder.findById(orderId);
     if (!order) {
@@ -192,7 +215,17 @@ router.patch("/:orderId/status", isAuth, isAdmin, async (req, res) => {
     order.status = status;
     order.adminNotes = adminNotes;
     order.approvedPrice = approvedPrice;
+    order.validationNotes = validationNotes;
     order.approvedBy = req.user.id;
+
+    // Add to status history
+    order.statusHistory.push({
+      status,
+      timestamp: new Date(),
+      note: `Status updated to ${status}${
+        validationNotes ? ` - ${validationNotes}` : ""
+      }`,
+    });
 
     await order.save();
     res.json({ message: "Order updated successfully", order });

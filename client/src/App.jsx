@@ -17,6 +17,7 @@ import ProductsPage from "./pages/ProductsPage";
 import Profile from "./pages/Profile"; // Added import for Profile page
 import CustomOrderForm from "./pages/CustomOrderForm";
 import CustomerOrderDetail from "./pages/CustomerOrderDetail";
+import CustomOrderDetail from "./pages/CustomOrderDetail";
 // Lazy load admin components
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const ProductAnalytics = lazy(() => import("./pages/ProductAnalytics"));
@@ -157,6 +158,16 @@ const AppLayout = () => {
           element={
             <ProtectedRoute>
               <CustomerOrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/custom-orders/:orderId"
+          element={
+            <ProtectedRoute>
+              <Suspense fallback={<div>Loading...</div>}>
+                <CustomOrderDetail />
+              </Suspense>
             </ProtectedRoute>
           }
         />
