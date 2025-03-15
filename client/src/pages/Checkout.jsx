@@ -88,7 +88,11 @@ const Checkout = () => {
     
     try {
       setProcessing(true);
-      await axios.post('/api/orders/request-otp');
+      await axios.post('/api/orders/request-otp',{},{
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
       setOtpSent(true);
       setError(null);
     } catch (err) {
@@ -112,7 +116,11 @@ const Checkout = () => {
       const response = await axios.post('/api/orders/place-order', {
         otp,
         shippingInfo
-      });
+      },{
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
       
       // Navigate to order confirmation
       navigate(`/order-confirmation/${response.data.orderId}`);
