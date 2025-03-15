@@ -71,7 +71,9 @@ import adminRoutes from "./routes/adminRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
-import userRoutes from "./routes/userRoutes.js"; // Import user routes
+import userRoutes from "./routes/userRoutes.js"; 
+import customOrderRoutes from "./routes/customOrderRoutes.js"
+
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -88,6 +90,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/custom-orders", customOrderRoutes);
 
 
 // --- Server Setup ---
