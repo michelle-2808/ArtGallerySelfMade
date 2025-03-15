@@ -1,17 +1,5 @@
 import mongoose from "mongoose";
 
-// Pre-save hook to generate order number
-const generateOrderNumber = function (next) {
-  if (!this.orderNumber) {
-    const timestamp = new Date().getTime().toString().slice(-6);
-    const random = Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(4, "0");
-    this.orderNumber = `CUST-${timestamp}-${random}`;
-  }
-  next();
-};
-
 const customOrderSchema = new mongoose.Schema(
   {
     userId: {
@@ -30,7 +18,7 @@ const customOrderSchema = new mongoose.Schema(
       specifications: { type: String },
       customizations: { type: String },
       expectedPrice: { type: Number },
-      attachments: [{ type: String }], // URLs to uploaded images/files (including reference images)
+      attachments: [{ type: String }],
     },
     customerInfo: {
       name: { type: String, required: true },
@@ -50,6 +38,13 @@ const customOrderSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected", "in_production", "completed"],
       default: "pending",
     },
+    statusHistory: [
+      {
+        status: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+        note: { type: String },
+      },
+    ],
     adminNotes: { type: String },
     approvedPrice: { type: Number },
     approvedBy: {
@@ -60,7 +55,7 @@ const customOrderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Generate order number
+// Pre-save hook to generate order number and initialize status history
 customOrderSchema.pre("save", function (next) {
   if (!this.orderNumber) {
     const timestamp = new Date().getTime().toString().slice(-6);
@@ -68,11 +63,25 @@ customOrderSchema.pre("save", function (next) {
       .toString()
       .padStart(4, "0");
     this.orderNumber = `CUST-${timestamp}-${random}`;
+
+    // Add initial status to history
+    if (!this.statusHistory || this.statusHistory.length === 0) {
+      this.statusHistory = [{ status: this.status, timestamp: new Date() }];
+    }
   }
   next();
 });
 
-customOrderSchema.pre("save", generateOrderNumber);
+// Method to update order status with history tracking
+customOrderSchema.methods.updateStatus = function (status, note = "") {
+  this.status = status;
+  this.statusHistory.push({
+    status: status,
+    timestamp: new Date(),
+    note: note,
+  });
+  return this.save();
+};
 
 const CustomOrder = mongoose.model("CustomOrder", customOrderSchema);
 export default CustomOrder;

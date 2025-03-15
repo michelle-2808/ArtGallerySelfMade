@@ -130,7 +130,7 @@ export default function CustomOrderForm() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6">Custom Order Request</h2>
+      <h2 className="text-2xl font-bold mb-6 font-playfair">Custom Order Request</h2>
       <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-6">
         {/* Left Column */}
         <div className="md:w-1/2 space-y-6">
@@ -153,6 +153,13 @@ export default function CustomOrderForm() {
               placeholder="Specifications"
               onChange={(e) =>
                 handleChange(e, "productDetails", "specifications")
+              }
+              className="w-full p-2 border rounded h-32"
+            />
+            <textarea
+              placeholder="Customizations Needed (optional)"
+              onChange={(e) =>
+                handleChange(e, "productDetails", "customizations")
               }
               className="w-full p-2 border rounded h-32"
             />
@@ -329,7 +336,7 @@ export default function CustomOrderForm() {
           ) : (
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
               onClick={requestOtp}
               disabled={processing}
             >

@@ -58,7 +58,15 @@ router.post("/submit", isAuth, async (req, res) => {
     await otpRecord.save();
 
     // Create custom order with request body data
+    // Generate order number first
+    const timestamp = new Date().getTime().toString().slice(-6);
+    const random = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, "0");
+    const orderNumber = `CUST-${timestamp}-${random}`;
+
     const customOrder = new CustomOrder({
+      orderNumber,
       userId: req.user.id,
       customerInfo: {
         name: req.body.customerInfo.name,
@@ -70,8 +78,8 @@ router.post("/submit", isAuth, async (req, res) => {
         title: req.body.productDetails.title,
         description: req.body.productDetails.description,
         specifications: req.body.productDetails.specifications,
-        customizations: req.body.productDetails.customizations,
-        expectedPrice: req.body.productDetails.expectedPrice,
+        customizations: req.body.productDetails.customizations || "",
+        expectedPrice: Number(req.body.productDetails.expectedPrice) || 0,
         attachments: req.body.productDetails.attachments || [],
       },
       shippingAddress: {
@@ -85,7 +93,23 @@ router.post("/submit", isAuth, async (req, res) => {
     });
 
     try {
+      // Add initial status to history
+      customOrder.statusHistory = [
+        {
+          status: "pending",
+          timestamp: new Date(),
+          note: "Custom order placed",
+        },
+      ];
+
+      // Save the order
       await customOrder.save();
+
+      // Double check the save was successful
+      const savedOrder = await CustomOrder.findById(customOrder._id);
+      if (!savedOrder) {
+        throw new Error("Failed to save custom order");
+      }
     } catch (err) {
       console.error("Save error:", err);
       throw err;
@@ -113,6 +137,31 @@ router.get("/my-orders", isAuth, async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching orders", error: error.message });
+  }
+});
+
+// Get specific custom order
+router.get("/:orderId", isAuth, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const userId = req.user.id;
+
+    const order = await CustomOrder.findOne({ _id: orderId, userId });
+
+    if (!order) {
+      return res.status(404).json({
+        message: "Custom order not found",
+        errorType: "NOT_FOUND",
+      });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching custom order",
+      error: error.message,
+      errorType: "SERVER_ERROR",
+    });
   }
 });
 

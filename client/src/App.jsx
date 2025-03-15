@@ -16,6 +16,7 @@ import OrderConfirmation from "./pages/OrderConfirmation";
 import ProductsPage from "./pages/ProductsPage";
 import Profile from "./pages/Profile"; // Added import for Profile page
 import CustomOrderForm from "./pages/CustomOrderForm";
+import CustomerOrderDetail from "./pages/CustomerOrderDetail";
 // Lazy load admin components
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const ProductAnalytics = lazy(() => import("./pages/ProductAnalytics"));
@@ -147,13 +148,18 @@ const AppLayout = () => {
           path="/custom-orders/success"
           element={
             <ProtectedRoute>
-              <Suspense fallback={<div>Loading...</div>}>
-                <OrderConfirmation />
-              </Suspense>
+              <OrderConfirmation />
             </ProtectedRoute>
           }
         />
-        {/* Added route for order details */}
+        <Route
+          path="/orders/:orderId"
+          element={
+            <ProtectedRoute>
+              <CustomerOrderDetail />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   );

@@ -5,7 +5,7 @@ import axios from "axios";
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
-  const [userOrders, setUserOrders] = useState([]);
+  const [userOrders, setUserOrders] = useState({ regular: [], custom: [] });
   const [userStats, setUserStats] = useState(null);
   const [favoriteCategory, setFavoriteCategory] = useState("N/A");
   const [orderFrequency, setOrderFrequency] = useState("0/month");
@@ -25,14 +25,27 @@ const Dashboard = () => {
           return;
         }
 
-        // Fetch user orders
+        // Fetch regular orders
         const ordersResponse = await axios.get("/api/orders/my-orders", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        setUserOrders(ordersResponse.data);
+        // Fetch custom orders
+        const customOrdersResponse = await axios.get(
+          "/api/custom-orders/my-orders",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setUserOrders({
+          regular: ordersResponse.data,
+          custom: customOrdersResponse.data,
+        });
 
         // Fetch user dashboard stats
         const statsResponse = await axios.get("/api/users/dashboard-stats", {
@@ -111,8 +124,8 @@ const Dashboard = () => {
 
       {/* Recent Orders */}
       <div className="bg-white p-6 rounded-xl shadow-md mb-8">
-        <h2 className="text-xl font-semibold mb-4">Recent Orders</h2>
-        {userOrders.length > 0 ? (
+        <h2 className="text-xl font-semibold mb-4">Recent Regular Orders</h2>
+        {userOrders.regular.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -135,7 +148,7 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {userOrders.slice(0, 5).map((order) => (
+                {userOrders.regular.slice(0, 5).map((order) => (
                   <tr key={order._id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {order._id.substring(0, 8)}...
@@ -176,12 +189,99 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="text-center py-4">
-            <p className="text-gray-500">You haven't placed any orders yet.</p>
+            <p className="text-gray-500">
+              You haven't placed any regular orders yet.
+            </p>
             <Link
               to="/products"
               className="inline-block mt-4 px-4 py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700"
             >
               Browse Products
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Recent Custom Orders */}
+      <div className="bg-white p-6 rounded-xl shadow-md mb-8">
+        <h2 className="text-xl font-semibold mb-4">Recent Custom Orders</h2>
+        {userOrders.custom.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Order ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {userOrders.custom.slice(0, 5).map((order) => (
+                  <tr key={order._id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {order._id.substring(0, 8)}...
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          order.status === "Delivered"
+                            ? "bg-green-100 text-green-800"
+                            : order.status === "Processing"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : order.status === "Shipped"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      $
+                      {(
+                        order.approvedPrice ||
+                        order.productDetails.expectedPrice ||
+                        0
+                      ).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <Link
+                        to={`/orders/${order._id}`}
+                        className="text-green-600 hover:text-green-900"
+                      >
+                        View Order
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-4">
+            <p className="text-gray-500">
+              You haven't placed any custom orders yet.
+            </p>
+            <Link
+              to="/custom-products" //Assumed route for custom products
+              className="inline-block mt-4 px-4 py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700"
+            >
+              Browse Custom Products
             </Link>
           </div>
         )}
